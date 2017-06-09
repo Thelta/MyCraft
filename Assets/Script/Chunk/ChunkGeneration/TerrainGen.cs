@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using SimplexNoise;
 
 public class TerrainGen
 {
-
+    public Queue<TerrainGenData> dataQueue = new Queue<TerrainGenData>();
     float stoneBaseHeight = -24;
     float stoneBaseNoise = 0.05f;
     float stoneBaseNoiseHeight = 4;
@@ -23,19 +23,18 @@ public class TerrainGen
     float treeFrequency = 0.1f;
     int treeDensity = 3 ;
 
-    public Chunk ChunkGen(Chunk chunk)
+    public void ChunkGen(WorldPos chunkWorldPos)
     {
-        for (int x = chunk.pos.x - 3; x < chunk.pos.x + Chunk.chunkSize + 3; x++)
+        for (int x = chunkWorldPos.x - 3; x < chunkWorldPos.x + Chunk.chunkSize + 3; x++)
         {
-            for (int z = chunk.pos.z - 3; z < chunk.pos.z + Chunk.chunkSize + 3; z++)
+            for (int z = chunkWorldPos.z - 3; z < chunkWorldPos.z + Chunk.chunkSize + 3; z++)
             {
-                chunk = ChunkColumnGen(chunk, x, z);
+                ChunkColumnGen(chunkWorldPos, x, z);
             }
         }
-        return chunk;
     }
 
-    public Chunk ChunkColumnGen(Chunk chunk, int x, int z)
+    public void ChunkColumnGen(WorldPos chunkWorldPos, int x, int z)
     {
         int stoneHeight = Mathf.FloorToInt(stoneBaseHeight);
         stoneHeight += GetNoise(x, 0, z, stoneMountainFrequency, Mathf.FloorToInt(stoneMountainHeight));
@@ -48,27 +47,25 @@ public class TerrainGen
         int dirtHeight = stoneHeight + Mathf.FloorToInt(dirtBaseHeight);
         dirtHeight += GetNoise(x, 100, z, dirtNoise, Mathf.FloorToInt(dirtNoiseHeight));
 
-        for (int y = chunk.pos.y - 8; y < chunk.pos.y + Chunk.chunkSize; y++)
+        for (int y = chunkWorldPos.y - 8; y < chunkWorldPos.y + Chunk.chunkSize; y++)
         {
             int caveChance = GetNoise(x, y, z, caveFrequency, 100);
             if (y <= stoneHeight && caveSize < caveChance)
             {
-                setBlock(x, y, z, new Block(), chunk);
+                setBlock(x, y, z, new Block(), chunkWorldPos, dataQueue);
             }
             else if (y <= dirtHeight && caveSize < caveChance)
             {
-                setBlock(x, y, z, new BlockGrass(), chunk);
+                setBlock(x, y, z, new BlockGrass(), chunkWorldPos, dataQueue);
                 if (y == dirtHeight && GetNoise(x, 0, z, treeFrequency, 100) < treeDensity)    //Add this line
-                    createTree(x, y + 1, z, chunk);                                              //And this line
+                    CreateTree(x, y + 1, z, chunkWorldPos);                                              //And this line
             }
             else
             {
-                setBlock(x, y, z, new BlockAir(), chunk);
+                setBlock(x, y, z, new BlockAir(), chunkWorldPos, dataQueue);
             }
 
         }
-
-        return chunk;
     }
 
     public static int GetNoise(int x, int y, int z, float scale, int max)
@@ -76,22 +73,24 @@ public class TerrainGen
         return Mathf.FloorToInt((Noise.Generate(x * scale, y * scale, z * scale) + 1f) * (max / 2f));
     }
 
-    public static void setBlock(int x, int y, int z, Block block, Chunk chunk, bool replaceBlocks = false)
+    public static void setBlock(int x, int y, int z, 
+                                Block block, WorldPos chunkWorldPos, Queue<TerrainGenData> dataQueue,
+                                bool replaceBlocks = false)
     {
-        x -= chunk.pos.x;
-        y -= chunk.pos.y;
-        z -= chunk.pos.z;
+        x -= chunkWorldPos.x;
+        y -= chunkWorldPos.y;
+        z -= chunkWorldPos.z;
 
         if(Chunk.InRange(x) && Chunk.InRange(y) && Chunk.InRange(z))
         {
-            if(replaceBlocks || chunk.blocks[x, y, z] == null)
+            lock(dataQueue)
             {
-                chunk.SetBlock(x, y, z, block);
+                dataQueue.Enqueue(new TerrainGenData(x, y, z, replaceBlocks, block));
             }
         }
     }
 
-    void createTree(int x, int y, int z, Chunk chunk)
+    void CreateTree(int x, int y, int z, WorldPos chunkWorldPos)
     {
         //create leaves
         for (int xi = -2; xi <= 2; xi++)
@@ -100,14 +99,14 @@ public class TerrainGen
             {
                 for (int zi = -2; zi <= 2; zi++)
                 {
-                    setBlock(x + xi, y + yi, z + zi, new BlockLeaves(), chunk, true);
+                    setBlock(x + xi, y + yi, z + zi, new BlockLeaves(), chunkWorldPos, dataQueue, true);
                 }
             }
         }
         //create trunk
         for (int yt = 0; yt < 6; yt++)
         {
-            setBlock(x, y + yt, z, new BlockWood(), chunk, true);
+            setBlock(x, y + yt, z, new BlockWood(), chunkWorldPos, dataQueue, true);
         }
     }
 }

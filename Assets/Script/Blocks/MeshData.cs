@@ -46,7 +46,7 @@ public class MeshData
 
     }
 
-    public void AddTriangle(int tri) //TODO : BU FONKSİYONA BAK.
+    public void AddTriangle(int tri)
     {
         triangles.Add(tri);
 
