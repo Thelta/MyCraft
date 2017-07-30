@@ -6,12 +6,17 @@ public class Block
 {
     const float tileSize = 0.25f;
 
+    //public delegate MeshData GreedyFaceGroupDataDirection(int x, int y, int z, int width, int height, MeshData meshData);
+
+    //static protected GreedyFaceGroupDataDirection[] GFDDArray = new GreedyFaceGroupDataDirection[] { GreedyFaceGroupDataNorth, GreedyFaceGroupDataEast, GreedyFaceGroupDataSouth, GreedyFaceGroupDataWest, GreedyFaceGroupDataUp, GreedyFaceGroupDataDown };;
+    
+    public BlockType type;
+
     public Block()
     {
-
+        type = BlockType.rock;
     }
 
-    public enum Direction { north, east, south, west, up, down };   //Vector3 Direction'larına benzer
 
     public struct Tile { public int x; public int y; }
 
@@ -58,49 +63,45 @@ public class Block
         return false;
     }
 
-    public virtual MeshData BlockData (Chunk chunk, int x, int y, int z, MeshData meshData) //Bu fonksiyon her kübün 6 tarafına bakıp, meshData'yı oluşturur.
+    public virtual MeshData GreedyDirectionData
+        (int x, int y, int z, int width, int height, Direction direction, MeshData meshData)
     {
         meshData.useRenderDataForColl = true;
 
-        if (!chunk.GetBlock(x, y + 1, z).IsSolid(Direction.down))
+        switch (direction)
         {
-            meshData = FaceDataUp(chunk, x, y, z, meshData);
+            case Direction.north:
+                meshData = GreedyFaceGroupDataNorth(x, y, z, width, height, meshData);
+                break;
+            case Direction.east:
+                meshData = GreedyFaceGroupDataEast(x, y, z, width, height, meshData);
+                break;
+            case Direction.south:
+                meshData = GreedyFaceGroupDataSouth(x, y, z, width, height, meshData);
+                break;
+            case Direction.west:
+                meshData = GreedyFaceGroupDataWest(x, y, z, width, height, meshData);
+                break;
+            case Direction.up:
+                meshData = GreedyFaceGroupDataUp(x, y, z, width, height, meshData);
+                break;
+            case Direction.down:
+                meshData = GreedyFaceGroupDataDown(x, y, z, width, height, meshData);
+                break;
         }
 
-        if (!chunk.GetBlock(x, y - 1, z).IsSolid(Direction.up))
-        {
-            meshData = FaceDataDown(chunk, x, y, z, meshData);
-        }
 
-        if (!chunk.GetBlock(x, y, z + 1).IsSolid(Direction.south))
-        {
-            meshData = FaceDataNorth(chunk, x, y, z, meshData);
-        }
-
-        if (!chunk.GetBlock(x, y, z - 1).IsSolid(Direction.north))
-        {
-            meshData = FaceDataSouth(chunk, x, y, z, meshData);
-        }
-
-        if (!chunk.GetBlock(x + 1, y, z).IsSolid(Direction.west))
-        {
-            meshData = FaceDataEast(chunk, x, y, z, meshData);
-        }
-
-        if (!chunk.GetBlock(x - 1, y, z).IsSolid(Direction.east))
-        {
-            meshData = FaceDataWest(chunk, x, y, z, meshData);
-        }
+        //GFDDArray[(int)direction](x, y, z, width, height, meshData);
 
         return meshData;
-
     }
 
-    protected virtual MeshData FaceDataUp(Chunk chunk, int x, int y, int z, MeshData meshData)
+    protected virtual MeshData GreedyFaceGroupDataUp
+        (int x, int y, int z, int width, int height, MeshData meshData)
     {
-        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z - 0.5f));
+        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z + 0.5f + width));
+        meshData.AddVertex(new Vector3(x + 0.5f + height, y + 0.5f, z + 0.5f + width));
+        meshData.AddVertex(new Vector3(x + 0.5f + height, y + 0.5f, z - 0.5f));
         meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z - 0.5f));
 
         meshData.AddQuadTriangles();
@@ -110,13 +111,14 @@ public class Block
         return meshData;
     }
 
-    protected virtual MeshData FaceDataDown
-      (Chunk chunk, int x, int y, int z, MeshData meshData)
+
+    protected virtual MeshData GreedyFaceGroupDataDown
+  (int x, int y, int z, int width, int height, MeshData meshData)
     {
         meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z - 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z - 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z + 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f + height, y - 0.5f, z - 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f + height, y - 0.5f, z + 0.5f + width));
+        meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z + 0.5f + width));
 
         meshData.AddQuadTriangles();
 
@@ -125,12 +127,13 @@ public class Block
         return meshData;
     }
 
-    protected virtual MeshData FaceDataNorth
-        (Chunk chunk, int x, int y, int z, MeshData meshData)
+
+    protected virtual MeshData GreedyFaceGroupDataNorth
+    (int x, int y, int z, int width, int height, MeshData meshData)
     {
-        meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z + 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f + width, y - 0.5f, z + 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f + width, y + 0.5f + height, z + 0.5f));
+        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f + height, z + 0.5f));
         meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z + 0.5f));
 
         meshData.AddQuadTriangles();
@@ -140,13 +143,14 @@ public class Block
         return meshData;
     }
 
-    protected virtual MeshData FaceDataEast
-        (Chunk chunk, int x, int y, int z, MeshData meshData)
+
+    protected virtual MeshData GreedyFaceGroupDataEast
+    (int x, int y, int z, int width, int height, MeshData meshData)
     {
         meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z - 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z - 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z + 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f + width, z - 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f + width, z + 0.5f + height));
+        meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z + 0.5f + height));
 
         meshData.AddQuadTriangles();
 
@@ -155,13 +159,14 @@ public class Block
         return meshData;
     }
 
-    protected virtual MeshData FaceDataSouth
-        (Chunk chunk, int x, int y, int z, MeshData meshData)
+
+    protected virtual MeshData GreedyFaceGroupDataSouth
+    (int x, int y, int z, int width, int height, MeshData meshData)
     {
         meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z - 0.5f));
-        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z - 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z - 0.5f));
-        meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z - 0.5f));
+        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f + height, z - 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f + width, y + 0.5f + height, z - 0.5f));
+        meshData.AddVertex(new Vector3(x + 0.5f + width, y - 0.5f, z - 0.5f));
 
         meshData.AddQuadTriangles();
 
@@ -170,12 +175,13 @@ public class Block
         return meshData;
     }
 
-    protected virtual MeshData FaceDataWest
-        (Chunk chunk, int x, int y, int z, MeshData meshData)
+
+    protected virtual MeshData GreedyFaceGroupDataWest
+    (int x, int y, int z, int width, int height, MeshData meshData)
     {
-        meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z + 0.5f));
-        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z - 0.5f));
+        meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z + 0.5f + height));
+        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f + width, z + 0.5f + height));
+        meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f + width, z - 0.5f));
         meshData.AddVertex(new Vector3(x - 0.5f, y - 0.5f, z - 0.5f));
 
         meshData.AddQuadTriangles();
@@ -184,7 +190,5 @@ public class Block
 
         return meshData;
     }
-
-
 
 }

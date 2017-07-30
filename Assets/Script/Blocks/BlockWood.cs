@@ -4,9 +4,9 @@ using System;
 [Serializable]
 public class BlockWood : Block
 {
-    public BlockWood()
-        : base()
+    public BlockWood(): base()
     {
+        type = BlockType.wood;
     }
     public override Tile TexturePosition(Direction direction)
     {

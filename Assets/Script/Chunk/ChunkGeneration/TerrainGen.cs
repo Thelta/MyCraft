@@ -34,6 +34,28 @@ public class TerrainGen
         }
     }
 
+    public void ChunkGen(WorldPos chunkWorldPos, Block debugBlock)
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                for(int k = 0; k < 16; k++)
+                {
+                    if(i < 4 || j < 4 || k < 4)
+                    {
+                        setBlock(i, j, k, debugBlock, chunkWorldPos, dataQueue);
+                    }
+                    else
+                    {
+                        setBlock(i, j, k, new BlockAir(), chunkWorldPos, dataQueue);
+                    }
+                    
+                }
+            }
+        }
+    }
+
     public void ChunkColumnGen(WorldPos chunkWorldPos, int x, int z)
     {
         int stoneHeight = Mathf.FloorToInt(stoneBaseHeight);
@@ -57,8 +79,8 @@ public class TerrainGen
             else if (y <= dirtHeight && caveSize < caveChance)
             {
                 setBlock(x, y, z, new BlockGrass(), chunkWorldPos, dataQueue);
-                if (y == dirtHeight && GetNoise(x, 0, z, treeFrequency, 100) < treeDensity)    //Add this line
-                    CreateTree(x, y + 1, z, chunkWorldPos);                                              //And this line
+                if (y == dirtHeight && GetNoise(x, 0, z, treeFrequency, 100) < treeDensity)   
+                    CreateTree(x, y + 1, z, chunkWorldPos);
             }
             else
             {

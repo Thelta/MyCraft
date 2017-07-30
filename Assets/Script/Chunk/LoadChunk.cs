@@ -8,6 +8,7 @@ public class LoadChunk : MonoBehaviour
 	
 	List<WorldPos> updateList = new List<WorldPos>();
 	List<WorldPos> buildList = new List<WorldPos>();
+	List<WorldPos> chunksToDelete = new List<WorldPos>();
 
 	int timer = 0;
 
@@ -54,8 +55,8 @@ public class LoadChunk : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-	
-	}
+        //world.CreateChunk(0, 0, 0);
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -142,7 +143,6 @@ public class LoadChunk : MonoBehaviour
 	{
 		if (timer == 10)
 		{
-			var chunksToDelete = new List<WorldPos>();
 			foreach (var chunk in world.chunks)
 			{
 				float distance = Vector3.Distance(
@@ -157,6 +157,7 @@ public class LoadChunk : MonoBehaviour
 			}
 
 			timer = 0;
+			chunksToDelete.Clear();
 			return true;    //Add this line
 		}
 		timer++;

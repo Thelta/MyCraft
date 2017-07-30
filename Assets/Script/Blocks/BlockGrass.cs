@@ -5,6 +5,7 @@ public class BlockGrass : Block
 {
     public BlockGrass() : base ()
     {
+        type = BlockType.grass;
 
     }
 

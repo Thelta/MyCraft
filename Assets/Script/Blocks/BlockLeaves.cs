@@ -4,9 +4,10 @@ using System;
 [Serializable]
 public class BlockLeaves : Block
 {
-    public BlockLeaves()
-        : base()
+    public BlockLeaves() : base()
     {
+        type = BlockType.leaves;
+
     }
     public override Tile TexturePosition(Direction direction)
     {
