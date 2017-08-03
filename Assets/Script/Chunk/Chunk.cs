@@ -123,9 +123,9 @@ public class Chunk : MonoBehaviour {
 	public BlockType GetBlock(int x, int y, int z)
 	{
 		if (InRange(x) && InRange(y) && InRange(z))
-        {
-            return blocks[x + (y * chunkSize * chunkSize) + (z * chunkSize)];
-        }
+		{
+			return blocks[x + (y * chunkSize * chunkSize) + (z * chunkSize)];
+		}
 			
 		return world.GetBlock(pos.x + x, pos.y + y, pos.z + z);
 	}
@@ -142,7 +142,7 @@ public class Chunk : MonoBehaviour {
 	{
 		if (InRange(x) && InRange(y) && InRange(z))
 		{
-			blocks[x + (y * chunkSize * chunkSize) + (z * chunkSize * chunkSize)] = block;
+			blocks[x + (y * chunkSize * chunkSize) + (z * chunkSize)] = block;
 		}
 		else
 		{
