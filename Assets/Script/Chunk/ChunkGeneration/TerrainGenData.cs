@@ -8,11 +8,11 @@ public class TerrainGenData
 	public int y;
 	public int z;
 
-	public Block block;
+	public BlockType block;
 
 	public bool replace;
 
-	public TerrainGenData(int x, int y, int z, bool replace, Block block)
+	public TerrainGenData(int x, int y, int z, bool replace, BlockType block)
 	{
 		this.x = x;
 		this.y = y;

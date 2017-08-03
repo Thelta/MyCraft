@@ -9,7 +9,7 @@ using System;
 [RequireComponent(typeof(MeshCollider))]
 public class Chunk : MonoBehaviour {
 
-	public Block[,,] blocks;
+	public BlockType[] blocks;
 	public static int chunkSize = 16;
 	[HideInInspector]
 	public bool update = false;
@@ -28,6 +28,8 @@ public class Chunk : MonoBehaviour {
 	Thread generatorThread;
 
 	int generatedBlocks;
+   
+	static BlockBuilder[] blockBuilders = { null, new BlockAirBuilder(), new BlockBuilder(), new BlockGrassBuilder(), new BlockLeavesBuilder(), new BlockWoodBuilder() };
 
 
 
@@ -36,7 +38,7 @@ public class Chunk : MonoBehaviour {
 		filter = GetComponent<MeshFilter>();
 		coll = GetComponent<MeshCollider>();
 
-		blocks = new Block[chunkSize, chunkSize, chunkSize];
+		blocks = new BlockType[chunkSize * chunkSize * chunkSize];
 		isGenerating = false;
 	}
 
@@ -49,33 +51,33 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
 	{
-        Profiler.BeginSample("Updater");
+		Profiler.BeginSample("Updater");
 		rendered = true;
 		if(update && !isGenerating)
 		{
 			update = false;
 			GreedyMesher();
 		}
-        Profiler.EndSample();
+		Profiler.EndSample();
 
 
-        Profiler.BeginSample("Generator");
+		Profiler.BeginSample("Generator");
 		if(isGenerating)
 		{
 			UpdateGeneratedChunk();
 			rendered = false;
 		}
-        Profiler.EndSample();
-        //print(generatedBlocks);
+		Profiler.EndSample();
+		//print(generatedBlocks);
 
-        Profiler.BeginSample("Builder");
+		Profiler.BeginSample("Builder");
 		if(isGenerating && !generatorThread.IsAlive && generator.dataQueue.Count == 0)
 		{
 			isGenerating = false;
 			GreedyMesher();
 			update = false;
 		}
-        Profiler.EndSample();
+		Profiler.EndSample();
 
 
 	}
@@ -108,9 +110,9 @@ public class Chunk : MonoBehaviour {
 					int x = data.x, y = data.y, z = data.z;
 					bool replaceBlock = data.replace;
 
-					if (blocks[x, y, z] == null || replaceBlock)
+					if (GetBlock(x, y, z) == 0 || replaceBlock)
 					{
-						blocks[x, y, z] = data.block;
+						SetBlock(x, y, z, data.block);
 						generatedBlocks++;
 					}
 				}
@@ -118,10 +120,13 @@ public class Chunk : MonoBehaviour {
 		}
 	}
 
-	public Block GetBlock(int x, int y, int z)
+	public BlockType GetBlock(int x, int y, int z)
 	{
 		if (InRange(x) && InRange(y) && InRange(z))
-			return blocks[x, y, z];
+        {
+            return blocks[x + (y * chunkSize * chunkSize) + (z * chunkSize)];
+        }
+			
 		return world.GetBlock(pos.x + x, pos.y + y, pos.z + z);
 	}
 
@@ -133,36 +138,18 @@ public class Chunk : MonoBehaviour {
 		return true;
 	}
 
-	public void SetBlock(int x, int y, int z, Block block)
+	public void SetBlock(int x, int y, int z, BlockType block)
 	{
 		if (InRange(x) && InRange(y) && InRange(z))
 		{
-			blocks[x, y, z] = block;
+			blocks[x + (y << yMultiplier) + (z << zMultiplier)] = block;
 		}
 		else
 		{
 			world.SetBlock(pos.x + x, pos.y + y, pos.z + z, block);
 		}
 	}
-	/*
-	void UpdateChunk()  //Bir chunk'a update yapıldığında meshdata'yı yeniden oluşturur.
-	{
-		MeshData meshData = new MeshData();
 
-		for(int x = 0; x < chunkSize; x++)
-		{
-			for(int y = 0; y < chunkSize; y++)
-			{
-				for(int z = 0; z < chunkSize; z++)
-				{
-						meshData = blocks[x, y, z].BlockData(this, x, y, z, meshData);
-				}
-			}
-		}
-
-		RenderMesh(meshData);
-	}
-	*/
 	void RenderMesh(MeshData meshData)
 	{
 		filter.mesh.Clear();
@@ -185,8 +172,7 @@ public class Chunk : MonoBehaviour {
 	{
 		MeshData meshdata = new MeshData();
 
-		Block tempBlock1, tempBlock2;
-        BlockAir tempAir = new BlockAir();
+		BlockType tempBlock1, tempBlock2;
 
 		int i, j, k, l, u, v, n;
 
@@ -195,7 +181,6 @@ public class Chunk : MonoBehaviour {
 		int[] blockOffset = new int[] { 0, 0, 0 };
 
 		int[] mask = new int[Chunk.chunkSize * Chunk.chunkSize];
-		Profiler.BeginSample("mainLoop");
 		//First pass is for front face, second is back face
 		for(bool frontFace = true, backFace = false; backFace != frontFace; frontFace = frontFace && backFace, backFace = !backFace)
 		{
@@ -235,12 +220,12 @@ public class Chunk : MonoBehaviour {
 					{
 						for(blockPos[u] = 0; blockPos[u] < Chunk.chunkSize; blockPos[u]++)
 						{
-							tempBlock1 = blockPos[dim] >= 0 ? blocks[blockPos[0], blockPos[1], blockPos[2]] : tempAir;
-							tempBlock2 = blockPos[dim] < Chunk.chunkSize - 1 ? blocks[blockPos[0] + blockOffset[0],
+							tempBlock1 = blockPos[dim] >= 0 ? GetBlock(blockPos[0], blockPos[1], blockPos[2]) : BlockType.Air;
+							tempBlock2 = blockPos[dim] < Chunk.chunkSize - 1 ? GetBlock(blockPos[0] + blockOffset[0],
 																				blockPos[1] + blockOffset[1],
-																				blockPos[2] + blockOffset[2]] : tempAir;
+																				blockPos[2] + blockOffset[2]) : BlockType.Air;
 
-							mask[n++] = tempBlock1.type == tempBlock2.type ? 0 : (frontFace ? (int)tempBlock2.type : (int)tempBlock1.type);
+							mask[n++] = tempBlock1 == tempBlock2 ? 1 : (frontFace ? (int)tempBlock2 : (int)tempBlock1);
 
 						}
 					}
@@ -249,7 +234,6 @@ public class Chunk : MonoBehaviour {
 					n = 0;
 
 					int width = 0, height = 0, widthControlForHeight = 0;
-					Profiler.BeginSample("masker");
 					for(j = 0; j < Chunk.chunkSize; j++)
 					{
 						for(i = 0; i < Chunk.chunkSize; )
@@ -300,7 +284,7 @@ public class Chunk : MonoBehaviour {
 
 								//direction = Mathf.Sign(maskType) > 0 ? direction : (Direction)((int)direction * -1);
 
-								meshdata = blocks[x, y, z].GreedyDirectionData(x, y, z, width - 1, height - 1, direction, meshdata);
+								meshdata = blockBuilders[maskType].GreedyDirectionData(x, y, z, width - 1, height - 1, direction, meshdata);
 
 								for (l = 0; l < height; ++l)
 								{
@@ -320,11 +304,9 @@ public class Chunk : MonoBehaviour {
 							}
 						}
 					}
-					Profiler.EndSample();
 				}
 			}
 		}
-		Profiler.EndSample();
 		RenderMesh(meshdata);
 	}
 

@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BlockAir : Block
+public class BlockAirBuilder : BlockBuilder
 {
-    public BlockAir() : base()
+    public BlockAirBuilder() : base()
     {
-        type = BlockType.air;
+        type = BlockType.Air;
     }
 
     public override MeshData GreedyDirectionData

@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-[Serializable]
-public class BlockLeaves : Block
+
+public class BlockLeavesBuilder : BlockBuilder
 {
-    public BlockLeaves() : base()
+    public BlockLeavesBuilder() : base()
     {
-        type = BlockType.leaves;
+        type = BlockType.Leaves;
 
     }
     public override Tile TexturePosition(Direction direction)

@@ -1,29 +1,35 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
-[Serializable]
-public class BlockWood : Block
+
+public class BlockGrassBuilder : BlockBuilder
 {
-    public BlockWood(): base()
+    public BlockGrassBuilder() : base ()
     {
-        type = BlockType.wood;
+        type = BlockType.Grass;
+
     }
+
     public override Tile TexturePosition(Direction direction)
     {
         Tile tile = new Tile();
-        switch (direction)
+
+        switch(direction)
         {
             case Direction.up:
                 tile.x = 2;
-                tile.y = 1;
+                tile.y = 0;
                 return tile;
             case Direction.down:
-                tile.x = 2;
-                tile.y = 1;
+                tile.x = 1;
+                tile.y = 0;
                 return tile;
         }
-        tile.x = 1;
-        tile.y = 1;
+
+        tile.x = 3;
+        tile.y = 0;
+
         return tile;
     }
+
+
 }

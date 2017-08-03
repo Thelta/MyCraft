@@ -64,13 +64,13 @@ public class World : MonoBehaviour {
 		return containerChunk;
 	}
 
-	public Block GetBlock(int x, int y, int z)
+	public BlockType GetBlock(int x, int y, int z)
 	{
 		Chunk containerChunk = GetChunk(x, y, z);
 
 		if (containerChunk != null)
 		{
-			Block block = containerChunk.GetBlock(
+			BlockType block = containerChunk.GetBlock(
 				x - containerChunk.pos.x,
 				y - containerChunk.pos.y,
 				z - containerChunk.pos.z);
@@ -79,12 +79,12 @@ public class World : MonoBehaviour {
 		}
 		else
 		{
-			return new BlockAir();
+			return BlockType.Air;
 		}
 
 	}
 
-	public void SetBlock(int x, int y, int z, Block block)
+	public void SetBlock(int x, int y, int z, BlockType block)
 	{
 		Chunk chunk = GetChunk(x, y, z);
 

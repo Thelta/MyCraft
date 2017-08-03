@@ -29,7 +29,7 @@ public class ObjectChunk
 
         for(int i = 0; i < relativeBlocksPos.Count; i++)
         {
-            Terrain.SetBlock(relativeBlocksPos[i] + origin, chunk, new Block());
+            Terrain.SetBlock(relativeBlocksPos[i] + origin, chunk, BlockType.Rock);
         }
     }
 

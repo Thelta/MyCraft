@@ -2,19 +2,15 @@
 using System.Collections;
 
 
-public class Block
+public class BlockBuilder
 {
     const float tileSize = 0.25f;
-
-    //public delegate MeshData GreedyFaceGroupDataDirection(int x, int y, int z, int width, int height, MeshData meshData);
-
-    //static protected GreedyFaceGroupDataDirection[] GFDDArray = new GreedyFaceGroupDataDirection[] { GreedyFaceGroupDataNorth, GreedyFaceGroupDataEast, GreedyFaceGroupDataSouth, GreedyFaceGroupDataWest, GreedyFaceGroupDataUp, GreedyFaceGroupDataDown };;
     
     public BlockType type;
 
-    public Block()
+    public BlockBuilder()
     {
-        type = BlockType.rock;
+        type = BlockType.Rock;
     }
 
 
