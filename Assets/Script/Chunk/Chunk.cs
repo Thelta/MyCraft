@@ -142,7 +142,7 @@ public class Chunk : MonoBehaviour {
 	{
 		if (InRange(x) && InRange(y) && InRange(z))
 		{
-			blocks[x + (y << yMultiplier) + (z << zMultiplier)] = block;
+			blocks[x + (y * chunkSize * chunkSize) + (z * chunkSize * chunkSize)] = block;
 		}
 		else
 		{
