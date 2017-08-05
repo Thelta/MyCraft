@@ -284,7 +284,7 @@ public class Chunk : MonoBehaviour {
 
 								//direction = Mathf.Sign(maskType) > 0 ? direction : (Direction)((int)direction * -1);
 
-								meshdata = blockBuilders[maskType].GreedyDirectionData(x, y, z, width - 1, height - 1, direction, meshdata);
+								meshdata = blockBuilders[maskType].GreedyDirectionData(x, y, z, width, height, direction, meshdata);
 
 								for (l = 0; l < height; ++l)
 								{

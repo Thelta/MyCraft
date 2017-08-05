@@ -55,8 +55,8 @@ public class LoadChunk : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-        //world.CreateChunk(0, 0, 0);
-    }
+		//world.CreateChunk(0, 0, 0);
+	}
 	
 	// Update is called once per frame
 	void Update ()
