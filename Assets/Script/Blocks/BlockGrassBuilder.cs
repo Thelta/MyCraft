@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BlockGrass : Block
+public class BlockGrassBuilder : BlockBuilder
 {
-    public BlockGrass() : base ()
+    public BlockGrassBuilder() : base ()
     {
+        type = BlockType.Grass;
 
     }
 

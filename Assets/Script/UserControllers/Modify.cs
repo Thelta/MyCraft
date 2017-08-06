@@ -32,7 +32,7 @@ public class Modify : MonoBehaviour
                 blah.SetPosition(0, transform.position);
                 blah.SetPosition(1, hit.point);
                 blah.SetWidth(0.1f, 0.1f);
-                Terrain.SetBlock(hit, new BlockAir());
+                Terrain.SetBlock(hit, BlockType.Air);
                 Terrain.GetBlockPos(hit, true).print();
             }
         }
@@ -43,7 +43,7 @@ public class Modify : MonoBehaviour
 
             if (Physics.Raycast(transform.position, transform.forward, out hit, 100))
             {
-                Terrain.SetBlock(hit, new Block(), true);
+                Terrain.SetBlock(hit, BlockType.Rock, true);
             }
 
             if(isObject)

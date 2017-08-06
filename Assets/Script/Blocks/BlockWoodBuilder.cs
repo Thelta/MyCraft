@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-[Serializable]
-public class BlockWood : Block
+
+public class BlockWoodBuilder : BlockBuilder
 {
-    public BlockWood()
-        : base()
+    public BlockWoodBuilder(): base()
     {
+        type = BlockType.Wood;
     }
     public override Tile TexturePosition(Direction direction)
     {
