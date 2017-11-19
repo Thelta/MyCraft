@@ -65,5 +65,4 @@
 		}
 	ENDCG
 	}
-		Fallback "Transparent/Cutout/VertexLit"
 }

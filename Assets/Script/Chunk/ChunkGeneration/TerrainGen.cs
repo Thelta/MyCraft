@@ -4,7 +4,12 @@ using SimplexNoise;
 
 public class TerrainGen
 {
-    public Queue<TerrainGenData> dataQueue = new Queue<TerrainGenData>();
+    public Queue<TerrainGenData> dataQueue;
+    FastNoise biomeNoise;
+    FastNoise terrainNoise;
+
+    BiomeBuilder builder;
+
     float stoneBaseHeight = -24;
     float stoneBaseNoise = 0.05f;
     float stoneBaseNoiseHeight = 4;
@@ -23,13 +28,34 @@ public class TerrainGen
     float treeFrequency = 0.1f;
     int treeDensity = 3 ;
 
+    public TerrainGen()
+    {
+        dataQueue = new Queue<TerrainGenData>();
+
+        biomeNoise = new FastNoise();
+
+        FastNoise noise = new FastNoise();
+        noise.SetNoiseType(FastNoise.NoiseType.Simplex);
+        biomeNoise.SetCellularNoiseLookup(noise);
+
+        terrainNoise = new FastNoise();
+        terrainNoise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+        terrainNoise.SetFractalType(FastNoise.FractalType.FBM);
+
+        builder = new BiomeBuilder();
+        
+    }
+
     public void ChunkGen(WorldPos chunkWorldPos)
     {
         for (int x = chunkWorldPos.x - 3; x < chunkWorldPos.x + Chunk.chunkSize + 3; x++)
         {
             for (int z = chunkWorldPos.z - 3; z < chunkWorldPos.z + Chunk.chunkSize + 3; z++)
             {
-                ChunkColumnGen(chunkWorldPos, x, z);
+                Vector2 doubleNoise = biomeNoise.GetDoubleCellularNoise(x, z);
+
+                //ChunkColumnGen(chunkWorldPos, x, z);
+                builder.GenerateChunkColumn(chunkWorldPos, terrainNoise, dataQueue, x, z);
             }
         }
     }
@@ -94,6 +120,7 @@ public class TerrainGen
     {
         return Mathf.FloorToInt((Noise.Generate(x * scale, y * scale, z * scale) + 1f) * (max / 2f));
     }
+
 
     public static void SetBlock(int x, int y, int z, 
                                 BlockType block, WorldPos chunkWorldPos, Queue<TerrainGenData> dataQueue,
