@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Threading;
 using UnityEngine.Profiling;
-using System.Collections.Generic;
-using System;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
@@ -156,8 +154,10 @@ public class Chunk : MonoBehaviour {
 		filter.mesh.vertices = meshData.vertices.ToArray();
 		filter.mesh.triangles = meshData.triangles.ToArray();
 
-		filter.mesh.uv = meshData.uv.ToArray();
+		filter.mesh.SetUVs(0, meshData.uv);
 		filter.mesh.RecalculateNormals();
+
+		filter.mesh.SetUVs(1, meshData.texType);
 
 		coll.sharedMesh = null;
 		Mesh mesh = new Mesh();

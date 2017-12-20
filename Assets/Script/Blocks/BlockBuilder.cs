@@ -3,9 +3,7 @@ using System.Collections;
 
 
 public class BlockBuilder
-{
-    const float tileSize = 0.25f;
-    
+{    
     public BlockType type;
 
     public BlockBuilder()
@@ -16,23 +14,20 @@ public class BlockBuilder
 
     public struct Tile { public int x; public int y; }
 
-    public virtual Tile TexturePosition(Direction direction)
+    public virtual TextureType TexturePosition(Direction direction)
     {
-        Tile tile = new Tile();
-        tile.x = 0; tile.y = 0;
-
-        return tile;
+        return TextureType.Rock;
     }
 
-    public virtual Vector2[] FaceUVs(Direction direction)
+    public virtual Vector2[] FaceUVs(Direction direction, int width, int height)
     {
         Vector2[] UVs = new Vector2[4];
-        Tile tilePos = TexturePosition(direction);
 
-        UVs[0] = new Vector2(tileSize * tilePos.x + tileSize, tileSize * tilePos.y);
-        UVs[1] = new Vector2(tileSize * tilePos.x + tileSize, tileSize * tilePos.y + tileSize);
-        UVs[2] = new Vector2(tileSize * tilePos.x,  tileSize * tilePos.y + tileSize);
-        UVs[3] = new Vector2(tileSize * tilePos.x,  tileSize * tilePos.y);
+        UVs[3] = new Vector2(0, 0);
+        UVs[0] = new Vector2(width, 0);
+        UVs[2] = new Vector2(0,  height);
+        UVs[1] = new Vector2(width, height);
+
 
         return UVs;
 
@@ -86,6 +81,12 @@ public class BlockBuilder
                 break;
         }
 
+        //add texture index to uv2
+        int uvTexture = (int)TexturePosition(direction);
+        meshData.texType.Add(new Vector2(uvTexture, 0));
+        meshData.texType.Add(new Vector2(uvTexture, 0));
+        meshData.texType.Add(new Vector2(uvTexture, 0));
+        meshData.texType.Add(new Vector2(uvTexture, 0));
 
         //GFDDArray[(int)direction](x, y, z, width, height, meshData);
 
@@ -102,7 +103,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.up));
+        meshData.uv.AddRange(FaceUVs(Direction.up, width, height));
 
         return meshData;
     }
@@ -118,7 +119,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.down));
+        meshData.uv.AddRange(FaceUVs(Direction.down, width, height));
 
         return meshData;
     }
@@ -134,7 +135,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.north));
+        meshData.uv.AddRange(FaceUVs(Direction.north, width, height));
 
         return meshData;
     }
@@ -150,7 +151,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.east));
+        meshData.uv.AddRange(FaceUVs(Direction.east, width, height));
 
         return meshData;
     }
@@ -166,7 +167,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.south));
+        meshData.uv.AddRange(FaceUVs(Direction.south, width, height));
 
         return meshData;
     }
@@ -183,7 +184,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.west));
+        meshData.uv.AddRange(FaceUVs(Direction.west, width, height));
 
         return meshData;
     }

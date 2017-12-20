@@ -1,21 +1,35 @@
-﻿using UnityEngine;
+﻿#define debug_chunk
+
+using UnityEngine;
 using System.Collections.Generic;
+
 
 public class World : MonoBehaviour {
 
-	[HideInInspector]
+    [HideInInspector]
 	public Dictionary<WorldPos, Chunk> chunks;
 	public GameObject chunkPrefab;
 
-	void Awake()
+    void Awake()
 	{
-		chunks = new Dictionary<WorldPos, Chunk>();
-	}
+        chunks = new Dictionary<WorldPos, Chunk>();
 
-	void Start ()
+#if debug_chunk
+        Debug.LogWarning("YOU ARE IN CHUNK DEBUG MODE");
+#endif
+    }
+
+
+
+    void Start ()
 	{
+#if debug_chunk
+        CreateChunk(0, 0, 0);
 
-	}
+
+#endif
+
+    }
 	
 	void Update ()
 	{

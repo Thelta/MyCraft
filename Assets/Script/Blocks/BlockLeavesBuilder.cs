@@ -9,12 +9,9 @@ public class BlockLeavesBuilder : BlockBuilder
         type = BlockType.Leaves;
 
     }
-    public override Tile TexturePosition(Direction direction)
+    public override TextureType TexturePosition(Direction direction)
     {
-        Tile tile = new Tile();
-        tile.x = 0;
-        tile.y = 1;
-        return tile;
+        return TextureType.Leaves;
     }
     public override bool IsSolid(Direction direction)
     {

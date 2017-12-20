@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex("Base (RGB) Trans (A)", 2D) = "white" {}
+		_MainTexArr("Tex", 2DArray ) = "" {}
 		_Cutoff("Alpha cutoff", Range(0,1)) = 0.5
 	}
 		SubShader{
@@ -11,57 +12,33 @@
 
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Lambert addshadow alphatest:_Cutoff
+		#pragma surface surf Lambert addshadow alphatest:_Cutoff vertex:vert
 
 		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
+		#pragma target 3.5
 
 		sampler2D _MainTex;
+		UNITY_DECLARE_TEX2DARRAY(_MainTexArr);
 
 		struct Input
 		{
-			float3 worldPos;
-			float3 worldNormal;
-			float2 uv_MainTex;
+			float2 uv_MainTexArr;
+			int texType;
 		};
 
-		fixed4 _Color;
+		void vert(inout appdata_full v, out Input data) 
+		{
+			UNITY_INITIALIZE_OUTPUT(Input, data);
+			data.texType = (int) v.texcoord2.x;
+		}
 
 		void surf(Input IN, inout SurfaceOutput o)
 		{
-			//does block facing x, y or z direction?
-			float3 facePos = ceil(abs(IN.worldNormal));
-			float2 uvOffset;
-			if (facePos.x > 0)
-			{
-				uvOffset.x = IN.worldPos.z;
-				uvOffset.y = IN.worldPos.y;
-			}
-			else if (facePos.y > 0)
-			{
-				uvOffset.x = IN.worldPos.z;
-				uvOffset.y = IN.worldPos.x;
-			}
-			else
-			{
-				uvOffset.x = IN.worldPos.x;
-				uvOffset.y = IN.worldPos.y;
-			}
-			//From worldPos to tilePos
-			uvOffset = (uvOffset - trunc(uvOffset));
-			//Negative numbers grow at left side so add 1.
-			uvOffset.x = uvOffset.x < 0 ? uvOffset.x + 1 : uvOffset.x;
-			uvOffset.y = uvOffset.y < 0 ? uvOffset.y + 1 : uvOffset.y;
-			//TODO: It would be good practice to give rows of tile to shader
-			uvOffset /= 4;
+			float3 realUV = float3(IN.uv_MainTexArr.xy, IN.texType);
 
-			float2 uvStart = (floor(IN.uv_MainTex * 4)) / 4;
-
-			o.Albedo = tex2D(_MainTex, uvStart + uvOffset).rgb;
-
-			o.Alpha = tex2D(_MainTex, uvStart + uvOffset).a;
-
-
+			//o.Albedo = UNITY_SAMPLE_TEX2DARRAY(_MainTexArr, realUV);
+			o.Albedo = tex2D(_MainTex, realUV.xy).rgb;
+			o.Alpha = 1;
 		}
 	ENDCG
 	}

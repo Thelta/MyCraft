@@ -8,22 +8,15 @@ public class BlockWoodBuilder : BlockBuilder
     {
         type = BlockType.Wood;
     }
-    public override Tile TexturePosition(Direction direction)
+    public override TextureType TexturePosition(Direction direction)
     {
-        Tile tile = new Tile();
         switch (direction)
         {
             case Direction.up:
-                tile.x = 2;
-                tile.y = 1;
-                return tile;
+                return TextureType.WoodY;
             case Direction.down:
-                tile.x = 2;
-                tile.y = 1;
-                return tile;
+                return TextureType.WoodY;
         }
-        tile.x = 1;
-        tile.y = 1;
-        return tile;
+        return TextureType.WoodSurround;
     }
 }
