@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.IO;
 using System.Linq;
+using System;
 
 public class CreateTextureTypeEnum : Editor
 {
@@ -34,8 +35,8 @@ public class CreateTextureTypeEnum : Editor
             It seems Unity reads file in normal string sort like 1, 100, 1000, 2 etc
             So we need to do a natural sort using beginning number lie 1, 2, 100, 1000
         */
-
-        texNames = texNames.OrderBy(t => t.Substring(0, t.IndexOf('_')).Length).ThenBy(t => t.Substring(0, t.IndexOf('_'))).ToArray(); //sort by natural order like 1, 2, 100, 200
+        
+        texNames = texNames.OrderBy(t => Convert.ToInt32((t.Substring(0, t.IndexOf('_'))))).ToArray();
 
         return texNames;
     }
