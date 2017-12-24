@@ -14,12 +14,12 @@ public class BlockGrassBuilder : BlockBuilder
         switch(direction)
         {
             case Direction.up:
-                return TextureType.GrassUp;
+                return TextureType.grass_top;
             case Direction.down:
-                return TextureType.GrassDown;
+                return TextureType.grass_top;
         }
 
-        return TextureType.GrassSurround;
+        return TextureType.grass_side;
     }
 
 

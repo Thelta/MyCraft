@@ -36,8 +36,8 @@
 		{
 			float3 realUV = float3(IN.uv_MainTexArr.xy, IN.texType);
 
-			//o.Albedo = UNITY_SAMPLE_TEX2DARRAY(_MainTexArr, realUV);
-			o.Albedo = tex2D(_MainTex, realUV.xy).rgb;
+			o.Albedo = UNITY_SAMPLE_TEX2DARRAY(_MainTexArr, realUV);
+			//o.Albedo = tex2D(_MainTex, realUV.xy).rgb;
 			o.Alpha = 1;
 		}
 	ENDCG

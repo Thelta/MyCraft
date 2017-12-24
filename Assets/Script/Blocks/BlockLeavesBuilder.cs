@@ -11,7 +11,7 @@ public class BlockLeavesBuilder : BlockBuilder
     }
     public override TextureType TexturePosition(Direction direction)
     {
-        return TextureType.Leaves;
+        return TextureType.leaves_oak;
     }
     public override bool IsSolid(Direction direction)
     {

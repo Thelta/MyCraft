@@ -13,10 +13,10 @@ public class BlockWoodBuilder : BlockBuilder
         switch (direction)
         {
             case Direction.up:
-                return TextureType.WoodY;
+                return TextureType.log_oak_top;
             case Direction.down:
-                return TextureType.WoodY;
+                return TextureType.log_oak_top;
         }
-        return TextureType.WoodSurround;
+        return TextureType.log_oak;
     }
 }

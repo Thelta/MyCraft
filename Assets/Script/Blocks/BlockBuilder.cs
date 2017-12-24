@@ -16,7 +16,7 @@ public class BlockBuilder
 
     public virtual TextureType TexturePosition(Direction direction)
     {
-        return TextureType.Rock;
+        return TextureType.cobblestone;
     }
 
     public virtual Vector2[] FaceUVs(Direction direction, int width, int height)
