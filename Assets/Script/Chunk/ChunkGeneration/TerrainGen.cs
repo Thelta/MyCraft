@@ -50,9 +50,9 @@ public class TerrainGen
 
     public void ChunkGen(WorldPos chunkWorldPos)
     {
-        for (int x = chunkWorldPos.x - 3; x < chunkWorldPos.x + Chunk.chunkSize + 3; x++)
+        for (int x = chunkWorldPos.x; x < chunkWorldPos.x + Chunk.chunkSize; x++)
         {
-            for (int z = chunkWorldPos.z - 3; z < chunkWorldPos.z + Chunk.chunkSize + 3; z++)
+            for (int z = chunkWorldPos.z; z < chunkWorldPos.z + Chunk.chunkSize; z++)
             {
                 Vector2 doubleNoise = biomeNoise.GetDoubleCellularNoise(x, z);
 #if chunk_debug
@@ -90,7 +90,15 @@ public class TerrainGen
     {
         for(int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
         {
-            SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, dataQueue);
+            if(y < 2)
+            {
+                SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, dataQueue);
+            }
+            else
+            {
+                SetBlock(x, y, z, BlockType.Air, chunkWorldPos, dataQueue);
+            }
+            
         }
     }
 

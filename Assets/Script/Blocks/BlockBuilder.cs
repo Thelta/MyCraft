@@ -151,7 +151,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.east, width, height));
+        meshData.uv.AddRange(FaceUVs(Direction.east, height, width));
 
         return meshData;
     }
@@ -184,7 +184,7 @@ public class BlockBuilder
 
         meshData.AddQuadTriangles();
 
-        meshData.uv.AddRange(FaceUVs(Direction.west, width, height));
+        meshData.uv.AddRange(FaceUVs(Direction.west, height, width));
 
         return meshData;
     }
