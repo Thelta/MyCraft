@@ -1,4 +1,4 @@
-﻿#define debug_chunk
+﻿//#define debug_chunk
 
 using UnityEngine;
 using System.Collections.Generic;

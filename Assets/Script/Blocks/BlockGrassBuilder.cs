@@ -16,7 +16,7 @@ public class BlockGrassBuilder : BlockBuilder
             case Direction.up:
                 return TextureType.grass_top;
             case Direction.down:
-                return TextureType.grass_top;
+                return TextureType.dirt;
         }
 
         return TextureType.grass_side;

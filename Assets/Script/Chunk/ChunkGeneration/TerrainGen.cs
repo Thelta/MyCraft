@@ -1,4 +1,4 @@
-﻿#define chunk_debug
+﻿//#define chunk_debug
 
 using UnityEngine;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ public class TerrainGen
                 Vector2 doubleNoise = biomeNoise.GetDoubleCellularNoise(x, z);
 #if chunk_debug
                 DebugGen(chunkWorldPos, x, z);
-#elif chunk_debug
+#else
                 builder.GenerateChunkColumn(chunkWorldPos, terrainNoise, dataQueue, x, z);
 #endif
             }
@@ -90,7 +90,7 @@ public class TerrainGen
     {
         for(int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
         {
-            SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, dataQueue);
+            SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, dataQueue);
         }
     }
 
