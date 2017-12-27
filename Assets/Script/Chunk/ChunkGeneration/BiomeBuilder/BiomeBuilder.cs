@@ -43,7 +43,7 @@ public class BiomeBuilder
                 }
                 else if (y <= seaLevel)
                 {
-                    SetBlock(x, y, z, BlockType.Leaves, chunkWorldPos, dataQueue);
+                    SetBlock(x, y, z, BlockType.Water, chunkWorldPos, dataQueue);
                 }
             }
         }

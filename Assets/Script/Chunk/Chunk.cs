@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Threading;
 using UnityEngine.Profiling;
+using System;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
@@ -27,7 +28,7 @@ public class Chunk : MonoBehaviour {
 
 	int generatedBlocks;
    
-	static BlockBuilder[] blockBuilders = { null, new BlockAirBuilder(), new BlockBuilder(), new BlockGrassBuilder(), new BlockLeavesBuilder(), new BlockWoodBuilder() };
+	static BlockBuilder[] blockBuilders = { null, new BlockAirBuilder(), new BlockBuilder(), new BlockGrassBuilder(), new BlockLeavesBuilder(), new BlockWoodBuilder(), new BlockWaterBuilder() };
 
 
 
@@ -156,10 +157,9 @@ public class Chunk : MonoBehaviour {
 
 		filter.mesh.SetUVs(0, meshData.uv);
 		filter.mesh.RecalculateNormals();
+        filter.mesh.SetUVs(1, meshData.texType);
 
-		filter.mesh.SetUVs(1, meshData.texType);
-
-		coll.sharedMesh = null;
+        coll.sharedMesh = null;
 		Mesh mesh = new Mesh();
 		mesh.vertices = meshData.colVertices.ToArray();
 		mesh.triangles = meshData.colTriangles.ToArray();

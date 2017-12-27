@@ -54,7 +54,7 @@
 		float3 colorify(float3 baseColor, float3 pixelColor)
 		{
 			float3 baseColorHsv = rgb2hsv(baseColor);
-			float3 pixelColorHsv = rgb2hsv(pixelColor);
+			float3 pixelColorHsv = rgb2hsv(pixelColor.rgb);
 
 			baseColorHsv.z = pixelColorHsv.z * baseColorHsv.z;
 
@@ -67,15 +67,16 @@
 			//IN.texType = 4;
 			float3 realUV = float3(IN.uv_MainTexArr, IN.texType);
 
-			float3 textureColor = UNITY_SAMPLE_TEX2DARRAY(_MainTexArr, realUV);
-			if (IN.texType < 2)
+			float4 textureVals = UNITY_SAMPLE_TEX2DARRAY(_MainTexArr, realUV);
+			float3 textureColor = textureVals.rgb;
+			if (round(IN.texType) < 3 && textureVals.a > 0.5)
 			{
 				float3 baseColor = float3(0.521, 0.807, 0.353);
 				textureColor = colorify(baseColor, textureColor);
 			}
-			//o.Albedo = tex2D(_MainTex, realUV.xy).rgb;
+			
 			o.Albedo = textureColor;
-			o.Alpha = 1;
+			o.Alpha = textureVals.a;
 		}
 
 	ENDCG
