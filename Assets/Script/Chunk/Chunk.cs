@@ -268,8 +268,8 @@ public class Chunk : MonoBehaviour {
 
 								int x, y, z;
 
-								if(!frontFace)
-								{
+								if(!frontFace || maskType == (int)BlockType.Water) //NOTE: We want both water surfaces at same coord. To do that we cannot let block pos to use offset.
+								{                                                  // TODO: It would be great to seperate some parts of greedy mesher to block builders like calculatng surface positions etc. 
 									x = blockPos[0] - blockOffset[0];
 									y = blockPos[1] - blockOffset[1];
 									z = blockPos[2] - blockOffset[2];

@@ -21,7 +21,7 @@ public static class Terrain
         return GetBlockPos(pos);
     }
 
-    static float MoveWithinBlock(float pos, float norm, bool adjacent = false)  // TODO
+    static float MoveWithinBlock(float pos, float norm, bool adjacent = false) 
     {
         if (pos - (int)pos == 0.5f || pos - (int)pos == -0.5f)
         {

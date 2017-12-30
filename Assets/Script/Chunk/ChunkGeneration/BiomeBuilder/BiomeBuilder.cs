@@ -46,10 +46,6 @@ public class BiomeBuilder
                     SetBlock(x, y, z, BlockType.Water, chunkWorldPos, dataQueue);
 
                 }
-                else
-                {
-                    SetBlock(x, y, z, BlockType.Air, chunkWorldPos, dataQueue);
-                }
             }
         }
         else

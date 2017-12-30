@@ -90,13 +90,8 @@ public class TerrainGen
     {
         for(int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
         {
-            if(y < 2)
             {
-                SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, dataQueue);
-            }
-            else
-            {
-                SetBlock(x, y, z, BlockType.Air, chunkWorldPos, dataQueue);
+                SetBlock(x, y, z, BlockType.Water, chunkWorldPos, dataQueue);
             }
             
         }
