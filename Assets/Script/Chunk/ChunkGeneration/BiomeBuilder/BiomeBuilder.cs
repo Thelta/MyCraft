@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BiomeBuilder
 {
-    int stoneBaseHeight = -60;
+    int stoneBaseHeight = -120;
     float stoneBaseNoise = 0.01f;
     int stoneBaseNoiseHeight = 4;
     int stoneMinHeight = -22;
@@ -20,7 +20,7 @@ public class BiomeBuilder
     int seaLevel = 0;
     float seaFrequency = 0.0009f;
 
-    int maximumLandHeight = 150;
+    int maximumLandHeight = 300;
 
     float caveFrequency = 0.025f;
     int caveSize = 15;
@@ -32,7 +32,7 @@ public class BiomeBuilder
         int stoneHeight = stoneBaseHeight;
         stoneHeight += GetNoise(noise, seaFrequency, maximumLandHeight, x, 0, z);
         //Debug.Log(stoneHeight);
-        
+
         if (stoneHeight < seaLevel)
         {
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
@@ -44,6 +44,11 @@ public class BiomeBuilder
                 else if (y <= seaLevel)
                 {
                     SetBlock(x, y, z, BlockType.Water, chunkWorldPos, dataQueue);
+
+                }
+                else
+                {
+                    SetBlock(x, y, z, BlockType.Air, chunkWorldPos, dataQueue);
                 }
             }
         }

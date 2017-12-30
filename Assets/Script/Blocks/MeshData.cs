@@ -11,11 +11,11 @@ public class MeshData
     public List<Vector3> colVertices = new List<Vector3>();
     public List<int> colTriangles = new List<int>();
 
-    public bool useRenderDataForColl;
+    bool newCollisionData = false;
 
     public MeshData() { }
 
-    public void AddQuadTriangles()
+    private void AddQuadTriangles()
     {
         triangles.Add(vertices.Count - 4);
         triangles.Add(vertices.Count - 3);
@@ -25,7 +25,7 @@ public class MeshData
         triangles.Add(vertices.Count - 2);
         triangles.Add(vertices.Count - 1);
 
-        if(useRenderDataForColl)
+        if(newCollisionData)
         {
             colTriangles.Add(colVertices.Count - 4);
             colTriangles.Add(colVertices.Count - 3);
@@ -36,25 +36,22 @@ public class MeshData
         }
     }
 
-    public void AddVertex(Vector3 vertex) 
+    public void AddVertex(Vector3 vertex, bool useRenderDataForColl) 
     {
         vertices.Add(vertex);
 
         if (useRenderDataForColl)
         {
             colVertices.Add(vertex);
+
+            newCollisionData = true;
         }
 
-    }
-
-    public void AddTriangle(int tri)
-    {
-        triangles.Add(tri);
-
-        if (useRenderDataForColl)
+        if(vertices.Count % 4 == 0)
         {
-            colTriangles.Add(tri - (vertices.Count - colVertices.Count));
+            AddQuadTriangles();
         }
+
     }
 
 }

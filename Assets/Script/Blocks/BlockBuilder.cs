@@ -57,27 +57,25 @@ public class BlockBuilder
     public virtual MeshData GreedyDirectionData
         (int x, int y, int z, int width, int height, Direction direction, MeshData meshData)
     {
-        meshData.useRenderDataForColl = true;
-
         switch (direction)
         {
             case Direction.north:
-                meshData = GreedyFaceGroupDataNorth(x, y, z, width, height, meshData);
+                meshData = GreedyFaceGroupDataNorth(x, y, z, width, height, meshData, IsSolid(direction));
                 break;
             case Direction.east:
-                meshData = GreedyFaceGroupDataEast(x, y, z, width, height, meshData);
+                meshData = GreedyFaceGroupDataEast(x, y, z, width, height, meshData, IsSolid(direction));
                 break;
             case Direction.south:
-                meshData = GreedyFaceGroupDataSouth(x, y, z, width, height, meshData);
+                meshData = GreedyFaceGroupDataSouth(x, y, z, width, height, meshData, IsSolid(direction));
                 break;
             case Direction.west:
-                meshData = GreedyFaceGroupDataWest(x, y, z, width, height, meshData);
+                meshData = GreedyFaceGroupDataWest(x, y, z, width, height, meshData, IsSolid(direction));
                 break;
             case Direction.up:
-                meshData = GreedyFaceGroupDataUp(x, y, z, width, height, meshData);
+                meshData = GreedyFaceGroupDataUp(x, y, z, width, height, meshData, IsSolid(direction));
                 break;
             case Direction.down:
-                meshData = GreedyFaceGroupDataDown(x, y, z, width, height, meshData);
+                meshData = GreedyFaceGroupDataDown(x, y, z, width, height, meshData, IsSolid(direction));
                 break;
         }
 
@@ -94,14 +92,12 @@ public class BlockBuilder
     }
 
     protected virtual MeshData GreedyFaceGroupDataUp
-        (int x, int y, int z, int width, int height, MeshData meshData)
+        (int x, int y, int z, int width, int height, MeshData meshData, bool useRenderDataForColl = true)
     {
-        meshData.AddVertex(new Vector3(x, y + 1, z + width));
-        meshData.AddVertex(new Vector3(x + height, y + 1, z + width));
-        meshData.AddVertex(new Vector3(x + height, y + 1, z));
-        meshData.AddVertex(new Vector3(x, y + 1, z));
-
-        meshData.AddQuadTriangles();
+        meshData.AddVertex(new Vector3(x, y + 1, z + width), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + height, y + 1, z + width), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + height, y + 1, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y + 1, z), useRenderDataForColl);
 
         meshData.uv.AddRange(FaceUVs(Direction.up, width, height));
 
@@ -110,14 +106,12 @@ public class BlockBuilder
 
 
     protected virtual MeshData GreedyFaceGroupDataDown
-  (int x, int y, int z, int width, int height, MeshData meshData)
+  (int x, int y, int z, int width, int height, MeshData meshData, bool useRenderDataForColl)
     {
-        meshData.AddVertex(new Vector3(x, y, z));
-        meshData.AddVertex(new Vector3(x + height, y, z));
-        meshData.AddVertex(new Vector3(x + height, y, z + width));
-        meshData.AddVertex(new Vector3(x, y, z + width));
-
-        meshData.AddQuadTriangles();
+        meshData.AddVertex(new Vector3(x, y, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + height, y, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + height, y, z + width), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y, z + width), useRenderDataForColl);
 
         meshData.uv.AddRange(FaceUVs(Direction.down, width, height));
 
@@ -126,14 +120,12 @@ public class BlockBuilder
 
 
     protected virtual MeshData GreedyFaceGroupDataNorth
-    (int x, int y, int z, int width, int height, MeshData meshData)
+    (int x, int y, int z, int width, int height, MeshData meshData, bool useRenderDataForColl)
     {
-        meshData.AddVertex(new Vector3(x + width, y, z + 1));
-        meshData.AddVertex(new Vector3(x + width, y + height, z + 1));
-        meshData.AddVertex(new Vector3(x, y + height, z + 1));
-        meshData.AddVertex(new Vector3(x, y, z + 1));
-
-        meshData.AddQuadTriangles();
+        meshData.AddVertex(new Vector3(x + width, y, z + 1), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + width, y + height, z + 1), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y + height, z + 1), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y, z + 1), useRenderDataForColl);
 
         meshData.uv.AddRange(FaceUVs(Direction.north, width, height));
 
@@ -142,14 +134,12 @@ public class BlockBuilder
 
 
     protected virtual MeshData GreedyFaceGroupDataEast
-    (int x, int y, int z, int width, int height, MeshData meshData)
+    (int x, int y, int z, int width, int height, MeshData meshData, bool useRenderDataForColl)
     {
-        meshData.AddVertex(new Vector3(x + 1, y, z));
-        meshData.AddVertex(new Vector3(x + 1, y + width, z));
-        meshData.AddVertex(new Vector3(x + 1, y + width, z + height));
-        meshData.AddVertex(new Vector3(x + 1, y, z + height));
-
-        meshData.AddQuadTriangles();
+        meshData.AddVertex(new Vector3(x + 1, y, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + 1, y + width, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + 1, y + width, z + height), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + 1, y, z + height), useRenderDataForColl);
 
         meshData.uv.AddRange(FaceUVs(Direction.east, height, width));
 
@@ -158,14 +148,12 @@ public class BlockBuilder
 
 
     protected virtual MeshData GreedyFaceGroupDataSouth
-    (int x, int y, int z, int width, int height, MeshData meshData)
+    (int x, int y, int z, int width, int height, MeshData meshData, bool useRenderDataForColl)
     {
-        meshData.AddVertex(new Vector3(x, y, z));
-        meshData.AddVertex(new Vector3(x, y + height, z));
-        meshData.AddVertex(new Vector3(x + width, y + height, z));
-        meshData.AddVertex(new Vector3(x + width, y, z));
-
-        meshData.AddQuadTriangles();
+        meshData.AddVertex(new Vector3(x, y, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y + height, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + width, y + height, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x + width, y, z), useRenderDataForColl);
 
         meshData.uv.AddRange(FaceUVs(Direction.south, width, height));
 
@@ -174,15 +162,12 @@ public class BlockBuilder
 
 
     protected virtual MeshData GreedyFaceGroupDataWest
-    (int x, int y, int z, int width, int height, MeshData meshData)
+    (int x, int y, int z, int width, int height, MeshData meshData, bool useRenderDataForColl)
     {
-        meshData.AddVertex(new Vector3(x, y, z + height));
-        meshData.AddVertex(new Vector3(x, y + width, z + height));
-        meshData.AddVertex(new Vector3(x, y + width, z));
-        meshData.AddVertex(new Vector3(x, y, z));
-
-
-        meshData.AddQuadTriangles();
+        meshData.AddVertex(new Vector3(x, y, z + height), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y + width, z + height), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y + width, z), useRenderDataForColl);
+        meshData.AddVertex(new Vector3(x, y, z), useRenderDataForColl);
 
         meshData.uv.AddRange(FaceUVs(Direction.west, height, width));
 

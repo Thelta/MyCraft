@@ -16,7 +16,7 @@ public class BlockWaterBuilder : BlockBuilder
 
     public override bool IsSolid(Direction direction)
     {
-        return direction == Direction.up ? true : false;
+        return false;
     }
 
     public override MeshData GreedyDirectionData
@@ -24,21 +24,15 @@ public class BlockWaterBuilder : BlockBuilder
     {
         if(direction == Direction.up)
         {
-            meshData = GreedyFaceGroupDataUp(x, y, z, width, height, meshData);
+            meshData = GreedyFaceGroupDataUp(x, y, z, width, height, meshData, IsSolid(direction));
 
             int uvTexture = (int)TexturePosition(direction);
             meshData.texType.Add(new Vector2(uvTexture, 0));
             meshData.texType.Add(new Vector2(uvTexture, 0));
             meshData.texType.Add(new Vector2(uvTexture, 0));
             meshData.texType.Add(new Vector2(uvTexture, 0));
-
         }
-
-
-
+        
         return meshData;
     }
-
-
-
 }
