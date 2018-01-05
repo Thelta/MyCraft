@@ -10,7 +10,7 @@ public class BiomeBuilder
     int stoneMinHeight = -22;
 
     int stoneMountainHeight = 10;
-    float stoneMountainFrequency = 0.001f;
+    float stoneMountainFrequency = 0.00075f;
     
     int dirtBaseHeight = 6;
     float dirtNoise = 0.04f;
@@ -18,7 +18,7 @@ public class BiomeBuilder
 
     int seaNoiseHeight = 30;
     int seaLevel = 0;
-    float seaFrequency = 0.0009f;
+    float seaFrequency = 0.0015f;
 
     int maximumLandHeight = 300;
 
@@ -26,7 +26,7 @@ public class BiomeBuilder
     int caveSize = 15;
 
 
-    public void GenerateChunkColumn(WorldPos chunkWorldPos, FastNoise noise, Queue<TerrainGenData> dataQueue,
+    public void GenerateChunkColumn(WorldPos chunkWorldPos, FastNoise noise, BlockType[] blocks,
                                     int x, int z)
     {
         int stoneHeight = stoneBaseHeight;
@@ -39,11 +39,11 @@ public class BiomeBuilder
             {
                 if (y <= stoneHeight)
                 {
-                    SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, dataQueue);
+                    SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
                 }
                 else if (y <= seaLevel)
                 {
-                    SetBlock(x, y, z, BlockType.Water, chunkWorldPos, dataQueue);
+                    SetBlock(x, y, z, BlockType.Water, chunkWorldPos, blocks);
 
                 }
             }
@@ -60,15 +60,15 @@ public class BiomeBuilder
 
                 if (y <= stoneHeight)
                 {
-                    SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, dataQueue);
+                    SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
                 }
                 else if (y <= dirtHeight)
                 {
-                    SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, dataQueue);
+                    SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, blocks);
                 }
                 else
                 {
-                    SetBlock(x, y, z, BlockType.Air, chunkWorldPos, dataQueue);
+                    SetBlock(x, y, z, BlockType.Air, chunkWorldPos, blocks);
                 }
             }
 
@@ -85,8 +85,8 @@ public class BiomeBuilder
     }
 
     public static void SetBlock(int x, int y, int z,
-                            BlockType block, WorldPos chunkWorldPos, Queue<TerrainGenData> dataQueue,
-                            bool replaceBlocks = false)
+                        BlockType block, WorldPos chunkWorldPos, BlockType[] blocks,
+                        bool replaceBlocks = false)
     {
         x -= chunkWorldPos.x;
         y -= chunkWorldPos.y;
@@ -94,12 +94,10 @@ public class BiomeBuilder
 
         if (Chunk.InRange(x) && Chunk.InRange(y) && Chunk.InRange(z))
         {
-            lock (dataQueue)
-            {
-                dataQueue.Enqueue(new TerrainGenData(x, y, z, replaceBlocks, block));
-            }
+            blocks[x + (y * Chunk.chunkSize * Chunk.chunkSize) + (z * Chunk.chunkSize)] = block;
         }
     }
+
 
 
 

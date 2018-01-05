@@ -89,7 +89,7 @@ public class LoadChunk : MonoBehaviour
 				{
 					continue;
 				}
-				for(int y = -4; y < 4; y++)
+				for(int y = playerPos.y / 16 - 4; y < playerPos.y / 16 + 4; y++)
 				{
 					for(int x = newChunkPos.x - Chunk.chunkSize; x <= newChunkPos.x + Chunk.chunkSize; x += Chunk.chunkSize)
 					{

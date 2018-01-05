@@ -50,31 +50,24 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
 	{
-		Profiler.BeginSample("Updater");
+		
 		rendered = true;
 		if(update && !isGenerating)
 		{
 			update = false;
 			GreedyMesher();
 		}
-		Profiler.EndSample();
+		
 
-
-		Profiler.BeginSample("Generator");
-		if(isGenerating)
-		{
-			UpdateGeneratedChunk();
-			rendered = false;
-		}
-		Profiler.EndSample();
 		//print(generatedBlocks);
 
 		Profiler.BeginSample("Builder");
-		if(isGenerating && !generatorThread.IsAlive && generator.dataQueue.Count == 0)
+		if(isGenerating && !generatorThread.IsAlive)
 		{
-			isGenerating = false;
+            UpdateGeneratedChunk();
+            isGenerating = false;
 			GreedyMesher();
-			update = false;
+            update = false;
 		}
 		Profiler.EndSample();
 
@@ -98,25 +91,7 @@ public class Chunk : MonoBehaviour {
 
 	void UpdateGeneratedChunk()
 	{
-		lock(generator.dataQueue)
-		{
-			if(generator.dataQueue.Count > 0)
-			{
-				for(int i = 0; i < generator.dataQueue.Count; i++)
-				{
-					TerrainGenData data;
-					data = generator.dataQueue.Dequeue();
-					int x = data.x, y = data.y, z = data.z;
-					bool replaceBlock = data.replace;
-
-					if (GetBlock(x, y, z) == 0 || replaceBlock)
-					{
-						SetBlock(x, y, z, data.block);
-						generatedBlocks++;
-					}
-				}
-			}
-		}
+        blocks = generator.blocks;
 	}
 
 	public BlockType GetBlock(int x, int y, int z)
