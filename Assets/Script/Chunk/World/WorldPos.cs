@@ -41,20 +41,38 @@ public class WorldPos
         }
     }
 
-    public static WorldPos operator -(WorldPos c1, WorldPos c2)
+    public override string ToString()
     {
-        return new WorldPos(c1.x - c2.x, c1.y - c2.y, c1.z - c2.z);
+        return string.Format("{0} {1} {2}", x, y, z);
     }
 
-    public static WorldPos operator +(WorldPos c1, WorldPos c2)
+    public static float EuclideanDistance(WorldPos pos1, WorldPos pos2)
+    {
+        //I don't use - operator to avoid allocation
+        int xDist = pos1.x - pos2.x;
+        int yDist = pos1.y - pos2.y;
+        int zDist = pos1.z - pos2.z;
+        return Mathf.Sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
+    }
+
+    public static int ManhattanDistance(WorldPos pos1, WorldPos pos2)
+    {
+        //I don't use - operator to avoid allocation
+        int xDist = pos1.x - pos2.x;
+        int yDist = pos1.y - pos2.y;
+        int zDist = pos1.z - pos2.z;
+        return xDist + yDist + zDist;
+    }
+
+
+    public static WorldPos operator -(WorldPos pos1, WorldPos pos2)
+    {
+        return new WorldPos(pos1.x - pos2.x, pos1.y - pos2.y, pos1.z - pos2.z);
+    }
+
+    public static WorldPos operator +(WorldPos pos1, WorldPos pos2)
     {
         
-        return new WorldPos(c1.x + c2.x, c1.y + c2.y, c1.z + c2.z);
+        return new WorldPos(pos1.x + pos2.x, pos1.y + pos2.y, pos1.z + pos2.z);
     }
-
-    public void print()
-    {
-        Debug.Log(x + " " + y + " " + z + " ");
-    }
-
 }

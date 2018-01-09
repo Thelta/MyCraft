@@ -11,7 +11,6 @@ public class ObjectChunk
         originBlockPos = Terrain.GetBlockPos(hit, true);
         relativeBlocksPos = new List<WorldPos>();
         relativeBlocksPos.Add(new WorldPos());
-        originBlockPos.print();
     }
 
     public void addNewBlock(RaycastHit hit)

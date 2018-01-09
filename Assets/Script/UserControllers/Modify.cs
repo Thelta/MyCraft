@@ -33,7 +33,7 @@ public class Modify : MonoBehaviour
                 blah.SetPosition(1, hit.point);
                 blah.SetWidth(0.1f, 0.1f);
                 Terrain.SetBlock(hit, BlockType.Air);
-                Terrain.GetBlockPos(hit, true).print();
+                Terrain.GetBlockPos(hit, true);
             }
         }
 

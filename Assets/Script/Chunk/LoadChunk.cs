@@ -1,18 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Collections.Generic;
+using Priority_Queue;
 
 public class LoadChunk : MonoBehaviour
 {
 	public World world;
 	
-	List<WorldPos> updateList = new List<WorldPos>();
-	List<WorldPos> buildList = new List<WorldPos>();
-	List<WorldPos> chunksToDelete = new List<WorldPos>();
+	SimplePriorityQueue<WorldPos> buildQueue = new SimplePriorityQueue<WorldPos>();
+	
+	Queue<WorldPos> chunksToDelete = new Queue<WorldPos>();
 
 	int timer = 0;
 
-	static WorldPos[] chunkPositions = {   new WorldPos( 0, 0,  0), new WorldPos(-1, 0,  0), new WorldPos( 0, 0, -1), new WorldPos( 0, 0,  1), new WorldPos( 1, 0,  0),
+	const int PRIORITY_CHUNK_POS_COUNT = 45;
+	const int PRIORITY_CHUNK_LOOKUP_LIMIT = 5;
+	int priorityChunkPosIndex = 0;
+
+	const int OTHER_CHUNK_LOOKUP_MIN_LIMIT = 3;
+    const int OTHER_CHUNK_POS_COUNT = 193 - PRIORITY_CHUNK_LOOKUP_LIMIT;
+	int otherChunkPosIndex = PRIORITY_CHUNK_POS_COUNT;
+
+	const int MAXIMUM_DISTANCE = 512;
+    #region chunkPosition
+    static WorldPos[] chunkPositions = {   new WorldPos( 0, 0,  0), new WorldPos(-1, 0,  0), new WorldPos( 0, 0, -1), new WorldPos( 0, 0,  1), new WorldPos( 1, 0,  0),
 							 new WorldPos(-1, 0, -1), new WorldPos(-1, 0,  1), new WorldPos( 1, 0, -1), new WorldPos( 1, 0,  1), new WorldPos(-2, 0,  0),
 							 new WorldPos( 0, 0, -2), new WorldPos( 0, 0,  2), new WorldPos( 2, 0,  0), new WorldPos(-2, 0, -1), new WorldPos(-2, 0,  1),
 							 new WorldPos(-1, 0, -2), new WorldPos(-1, 0,  2), new WorldPos( 1, 0, -2), new WorldPos( 1, 0,  2), new WorldPos( 2, 0, -1),
@@ -51,9 +63,10 @@ public class LoadChunk : MonoBehaviour
 							 new WorldPos(-3, 0,  7), new WorldPos( 3, 0, -7), new WorldPos( 3, 0,  7), new WorldPos( 7, 0, -3), new WorldPos( 7, 0,  3),
 							 new WorldPos(-6, 0, -5), new WorldPos(-6, 0,  5), new WorldPos(-5, 0, -6), new WorldPos(-5, 0,  6), new WorldPos( 5, 0, -6),
 							 new WorldPos( 5, 0,  6), new WorldPos( 6, 0, -5), new WorldPos( 6, 0,  5) };
+    #endregion
 
-	// Use this for initialization
-	void Start ()
+    // Use this for initialization
+    void Start ()
 	{
 		//world.CreateChunk(0, 0, 0);
 	}
@@ -72,84 +85,79 @@ public class LoadChunk : MonoBehaviour
 	void FindChunksToLoad()
 	{
 		WorldPos playerPos = new WorldPos(Mathf.FloorToInt(transform.position.x / Chunk.chunkSize) * Chunk.chunkSize,
-							Mathf.FloorToInt(transform.position.y / Chunk.chunkSize) * Chunk.chunkSize,
-							Mathf.FloorToInt(transform.position.z / Chunk.chunkSize) * Chunk.chunkSize);
+										Mathf.FloorToInt(transform.position.y / Chunk.chunkSize) * Chunk.chunkSize,
+										Mathf.FloorToInt(transform.position.z / Chunk.chunkSize) * Chunk.chunkSize);
 
-		if(updateList.Count == 0)
+		int prevQueueCount = buildQueue.Count;
+		for(int i = 0; i < PRIORITY_CHUNK_LOOKUP_LIMIT; i++, 
+			priorityChunkPosIndex = (priorityChunkPosIndex + 1) % PRIORITY_CHUNK_POS_COUNT)
 		{
-			for(int i = 0; i  < chunkPositions.Length; i++)
-			{
-				WorldPos newChunkPos = new WorldPos(chunkPositions[i].x * Chunk.chunkSize + playerPos.x,
-					 0,
-					 chunkPositions[i].z * Chunk.chunkSize + playerPos.z);
-
-				Chunk newChunk = world.GetChunk(newChunkPos.x, newChunkPos.y, newChunkPos.z);
-
-				if(newChunk != null && (newChunk.rendered || updateList.Contains(newChunkPos)))
-				{
-					continue;
-				}
-				for(int y = playerPos.y / 16 - 4; y < playerPos.y / 16 + 4; y++)
-				{
-					for(int x = newChunkPos.x - Chunk.chunkSize; x <= newChunkPos.x + Chunk.chunkSize; x += Chunk.chunkSize)
-					{
-						for(int z = newChunkPos.z - Chunk.chunkSize; z <= newChunkPos.z; z += Chunk.chunkSize)
-						{
-							buildList.Add(new WorldPos(x, y * Chunk.chunkSize, z));
-						}
-					}
-
-					updateList.Add(new WorldPos(newChunkPos.x, y * Chunk.chunkSize, newChunkPos.z)); ;
-				}
-				return;
-			}
+			CreateChunkRow(playerPos, priorityChunkPosIndex);
 		}
+
+        int leftover = buildQueue.Count - prevQueueCount;
+		for(int i = 0; i < OTHER_CHUNK_LOOKUP_MIN_LIMIT + leftover; i++,
+            otherChunkPosIndex = otherChunkPosIndex < chunkPositions.Length - 1 ? otherChunkPosIndex + 1 : PRIORITY_CHUNK_POS_COUNT)
+        {
+            CreateChunkRow(playerPos, otherChunkPosIndex);
+        }
 	}
 
-	void BuildChunk(WorldPos pos)
+	[MethodImplAttribute(256)]
+	void CreateChunkRow(WorldPos playerPos, int index)
 	{
-	   if(world.GetChunk(pos.x, pos.y, pos.z) == null)
+		for (int y = playerPos.y - Chunk.chunkSize * 4; y <= playerPos.y + Chunk.chunkSize * 4; y += Chunk.chunkSize)
 		{
-			world.CreateChunk(pos.x, pos.y, pos.z);
+			WorldPos newChunkPos = new WorldPos(chunkPositions[index].x * Chunk.chunkSize + playerPos.x,
+												y,
+												chunkPositions[index].z * Chunk.chunkSize + playerPos.z);
+
+			Chunk newChunk = world.GetChunk(newChunkPos.x, y, newChunkPos.z);
+
+			if (newChunk != null || buildQueue.Contains(newChunkPos))
+			{
+				continue;
+			}
+
+			float priority = WorldPos.EuclideanDistance(playerPos, newChunkPos);
+			buildQueue.Enqueue(newChunkPos, priority);
 		}
+
 	}
-	
+
 	void LoadAndRenderChunks()
 	{
 		int i;
-		if(buildList.Count != 0)
+		if(buildQueue.Count != 0)
 		{
-			for(i = 0; i < buildList.Count && i < 8; i++)
+			for(i = 0; i < buildQueue.Count && i < 4; i++)
 			{
-				BuildChunk(buildList[0]);
-				buildList.RemoveAt(0);
-			}
-			return;
-		}
-		
-		if(updateList.Count != 0)
-		{
-			Chunk chunk = world.GetChunk(updateList[0].x, updateList[0].y, updateList[0].z);
-			if(chunk != null && !chunk.isGenerating)
-			{
-				chunk.update = true;
-			}
+				WorldPos chunkPos = buildQueue.Dequeue();
+				if (world.GetChunk(chunkPos.x, chunkPos.y, chunkPos.z) == null)
+				{
+					world.CreateChunk(chunkPos.x, chunkPos.y, chunkPos.z);
+				}
 
-			updateList.RemoveAt(0);
-		}
+				//print(chunkPos);
+			}
+		}		
 	}
 
-	bool DeleteChunks()    //Change the void on this line to bool
+	bool DeleteChunks()
 	{
 		if (timer == 10)
 		{
 			foreach (var chunk in world.chunks)
 			{
+				//Player position is used so it is better to use Vector3 dist instead of WorldPos dist.
 				float distance = Vector3.Distance(
 					new Vector3(chunk.Value.pos.x, 0, chunk.Value.pos.z),
 					new Vector3(transform.position.x, 0, transform.position.z));
-				if (distance > 512)
-					chunksToDelete.Add(chunk.Key);
+				if (distance > MAXIMUM_DISTANCE)
+				{
+					chunksToDelete.Enqueue(chunk.Key);
+				}
+					
 			}
 			foreach (var chunk in chunksToDelete)
 			{
@@ -158,10 +166,10 @@ public class LoadChunk : MonoBehaviour
 
 			timer = 0;
 			chunksToDelete.Clear();
-			return true;    //Add this line
+			return true;
 		}
 		timer++;
-		return false;    //Add this line
+		return false;
 	}
 	/*
 	void Start()

@@ -16,8 +16,6 @@ public class Chunk : MonoBehaviour {
 	public World world;
 	[HideInInspector]
 	public WorldPos pos;
-	[HideInInspector]
-	public bool rendered;
 
 	MeshFilter filter;
 	MeshCollider coll;
@@ -50,26 +48,27 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
 	{
-		
-		rendered = true;
-		if(update && !isGenerating)
+		/*if(update && !isGenerating)
 		{
+            print(transform.position);
 			update = false;
 			GreedyMesher();
-		}
+		}*/
 		
 
 		//print(generatedBlocks);
 
-		Profiler.BeginSample("Builder");
 		if(isGenerating && !generatorThread.IsAlive)
 		{
+            Profiler.BeginSample("Builder");
+
             UpdateGeneratedChunk();
             isGenerating = false;
 			GreedyMesher();
             update = false;
-		}
-		Profiler.EndSample();
+            Profiler.EndSample();
+        }
+		
 
 
 	}

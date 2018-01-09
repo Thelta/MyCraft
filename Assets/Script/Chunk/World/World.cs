@@ -33,7 +33,6 @@ public class World : MonoBehaviour {
 	
 	void Update ()
 	{
-		
 	}
 
 	public void CreateChunk(int x, int y, int z)
