@@ -22,8 +22,8 @@ public class BiomeBuilder
 
     int maximumLandHeight = 300;
 
-    float caveFrequency = 0.025f;
-    int caveSize = 15;
+    float caveFrequency = 0.008f;
+    int caveSize = 7;
 
 
     public void GenerateChunkColumn(WorldPos chunkWorldPos, FastNoise noise, BlockType[] blocks,
@@ -57,18 +57,27 @@ public class BiomeBuilder
 
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
+                int caveChance = GetNoise(noise, caveFrequency, 25, x, y, z);
 
-                if (y <= stoneHeight)
+                if(caveSize > caveChance)
                 {
-                    SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
-                }
-                else if (y <= dirtHeight)
-                {
-                    SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, blocks);
+                    SetBlock(x, y, z, BlockType.Air, chunkWorldPos, blocks);
                 }
                 else
                 {
-                    SetBlock(x, y, z, BlockType.Air, chunkWorldPos, blocks);
+                    if (y <= stoneHeight)
+                    {
+                        SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
+                    }
+                    else if (y <= dirtHeight)
+                    {
+                        SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, blocks);
+                    }
+                    else
+                    {
+                        SetBlock(x, y, z, BlockType.Air, chunkWorldPos, blocks);
+                    }
+
                 }
             }
 
