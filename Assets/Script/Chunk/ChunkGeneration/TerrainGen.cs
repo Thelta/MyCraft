@@ -12,24 +12,6 @@ public class TerrainGen
 
     BiomeBuilder builder;
 
-    float stoneBaseHeight = -24;
-    float stoneBaseNoise = 0.05f;
-    float stoneBaseNoiseHeight = 4;
-
-    float stoneMountainHeight = 48;
-    float stoneMountainFrequency = 0.008f;
-    float stoneMinHeight = -12;
-
-    float dirtBaseHeight = 1;
-    float dirtNoise = 0.04f;
-    float dirtNoiseHeight = 3;
-
-    float caveFrequency = 0.025f;
-    int caveSize = 7;
-
-    float treeFrequency = 0.1f;
-    int treeDensity = 3 ;
-
     public TerrainGen()
     {
         blocks = new BlockType[Chunk.chunkSize * Chunk.chunkSize * Chunk.chunkSize];

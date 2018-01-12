@@ -130,7 +130,7 @@ public class LoadChunk : MonoBehaviour
 		int i;
 		if(buildQueue.Count != 0)
 		{
-			for(i = 0; i < buildQueue.Count && i < 4; i++)
+			for(i = 0; i < buildQueue.Count && i < 5; i++)
 			{
 				WorldPos chunkPos = buildQueue.Dequeue();
 				if (world.GetChunk(chunkPos.x, chunkPos.y, chunkPos.z) == null)
