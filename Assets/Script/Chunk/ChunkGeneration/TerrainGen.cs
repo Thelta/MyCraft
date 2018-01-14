@@ -52,7 +52,16 @@ public class TerrainGen
         for(int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
         {
             {
-                SetBlock(x, y, z, BlockType.Water, chunkWorldPos, blocks);
+                if(y == 15)
+                {
+                    SetBlock(x, y, z, BlockType.Bush, chunkWorldPos, blocks);
+                }
+                else
+                {
+                    SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
+                }
+
+                
             }
             
         }

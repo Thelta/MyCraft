@@ -81,14 +81,20 @@ public class BlockBuilder
 
         //add texture index to uv2
         int uvTexture = (int)TexturePosition(direction);
-        meshData.texType.Add(new Vector2(uvTexture, 0));
-        meshData.texType.Add(new Vector2(uvTexture, 0));
-        meshData.texType.Add(new Vector2(uvTexture, 0));
-        meshData.texType.Add(new Vector2(uvTexture, 0));
+        AddUV2Info(meshData, uvTexture);
 
         //GFDDArray[(int)direction](x, y, z, width, height, meshData);
 
         return meshData;
+    }
+
+    public virtual void AddUV2Info(MeshData meshData, int uvTexture)
+    {
+        meshData.texType.Add(new Vector2(uvTexture, 0));
+        meshData.texType.Add(new Vector2(uvTexture, 0));
+        meshData.texType.Add(new Vector2(uvTexture, 0));
+        meshData.texType.Add(new Vector2(uvTexture, 0));
+
     }
 
     protected virtual MeshData GreedyFaceGroupDataUp

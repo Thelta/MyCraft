@@ -27,20 +27,14 @@ public class BlockWaterBuilder : BlockBuilder
             meshData = GreedyFaceGroupDataUp(x, y, z, width, height, meshData, IsSolid(direction));
 
             int uvTexture = (int)TexturePosition(direction);
-            meshData.texType.Add(new Vector2(uvTexture, 0));
-            meshData.texType.Add(new Vector2(uvTexture, 0));
-            meshData.texType.Add(new Vector2(uvTexture, 0));
-            meshData.texType.Add(new Vector2(uvTexture, 0));
+            AddUV2Info(meshData, uvTexture);
         }
         else if(direction == Direction.down)
         {
             meshData = GreedyFaceGroupDataDown(x, y, z, width, height, meshData, IsSolid(direction));
 
             int uvTexture = (int)TexturePosition(direction);
-            meshData.texType.Add(new Vector2(uvTexture, 0));
-            meshData.texType.Add(new Vector2(uvTexture, 0));
-            meshData.texType.Add(new Vector2(uvTexture, 0));
-            meshData.texType.Add(new Vector2(uvTexture, 0));
+            AddUV2Info(meshData, uvTexture);
         }
         
         return meshData;

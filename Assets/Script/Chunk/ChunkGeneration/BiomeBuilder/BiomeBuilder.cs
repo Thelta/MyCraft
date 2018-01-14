@@ -34,7 +34,6 @@ public class BiomeBuilder
     {
         int stoneHeight = stoneBaseHeight;
         stoneHeight += GetNoise(noise, seaFrequency, maximumLandHeight, x, 0, z);
-        //Debug.Log(stoneHeight);
 
         if (stoneHeight < seaLevel)
         {
@@ -76,9 +75,19 @@ public class BiomeBuilder
                     {
                         SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, blocks);
 
-                        if(dirtHeight == y && GetNoise(noise, treeFrequency, 20, x, 0, z) < treeDensity)
+                        int greenValue = GetNoise(noise, treeFrequency, 20, x, 0, z);
+
+                        if (dirtHeight == y)
                         {
-                            CreateTree(x, y + 1, z, blocks, chunkWorldPos);
+                            if(greenValue < treeDensity)
+                            {
+                                CreateTree(x, y + 1, z, blocks, chunkWorldPos);
+                            }
+                            else if(greenValue < 9)
+                            {
+                                SetBlock(x, y + 1, z, BlockType.Bush, chunkWorldPos, blocks);
+                            }
+                            
                         }
                     }
                     else
