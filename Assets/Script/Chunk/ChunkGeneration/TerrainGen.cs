@@ -18,10 +18,6 @@ public class TerrainGen
 
         biomeNoise = new FastNoise();
 
-        FastNoise noise = new FastNoise();
-        noise.SetNoiseType(FastNoise.NoiseType.Simplex);
-        biomeNoise.SetCellularNoiseLookup(noise);
-
         terrainNoise = new FastNoise();
         terrainNoise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
         terrainNoise.SetFractalType(FastNoise.FractalType.FBM);
@@ -36,7 +32,7 @@ public class TerrainGen
         {
             for (int z = chunkWorldPos.z; z < chunkWorldPos.z + Chunk.chunkSize; z++)
             {
-                Vector2 doubleNoise = biomeNoise.GetDoubleCellularNoise(x, z);
+                //Vector2 doubleNoise = biomeNoise.GetDoubleCellularNoise(x, z);
 #if chunk_debug
                 DebugGen(chunkWorldPos, x, z);
 #else

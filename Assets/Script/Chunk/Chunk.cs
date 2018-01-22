@@ -24,11 +24,9 @@ public class Chunk : MonoBehaviour
 	public bool isGenerating;   
 	TerrainGen generator;
 	Thread generatorThread;
-
-	int generatedBlocks;
    
 	static BlockBuilder[] blockBuilders = { null, new BlockAirBuilder(), new BlockBuilder(), new BlockGrassBuilder(),
-        new BlockLeavesBuilder(), new BlockWoodBuilder(), new BlockWaterBuilder(), new BlockBushBuilder() };
+        new BlockLeavesBuilder(), new BlockWoodBuilder(), new BlockWaterBuilder(), new BlockBushBuilder(), new BlockSandBuilder() };
 
 
 
@@ -87,7 +85,6 @@ public class Chunk : MonoBehaviour
 		generatorThread.Start();
 
 		isGenerating = true;
-		generatedBlocks = 0;
 	}
 
 	void UpdateGeneratedChunk()

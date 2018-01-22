@@ -4,44 +4,52 @@ using UnityEngine;
 
 public class BiomeBuilder
 {
-    int stoneBaseHeight = -120;
-    float stoneBaseNoise = 0.01f;
-    int stoneBaseNoiseHeight = 4;
-    int stoneMinHeight = -22;
+    const int stoneBaseHeight = -120;
 
-    int stoneMountainHeight = 10;
-    float stoneMountainFrequency = 0.00075f;
+    const int stoneMountainHeight = 10;
+    const float stoneMountainFrequency = 0.00075f;
+
+    const int sandHeight = -5;
     
-    int dirtBaseHeight = 6;
-    float dirtNoise = 0.04f;
-    int dirtNoiseHeight = 4;
+    const int dirtBaseHeight = 6;
+    const float dirtNoise = 0.04f;
+    const int dirtNoiseHeight = 4;
 
-    int seaNoiseHeight = 30;
-    int seaLevel = 0;
-    float seaFrequency = 0.0015f;
+    const int seaLevel = 0;
+    const float seaFrequency = 0.0015f;
 
-    int maximumLandHeight = 300;
+    const int maximumLandHeight = 300;
 
-    float caveFrequency = 0.008f;
-    int caveSize = 5;
+    const float caveFrequency = 0.008f;
+    const int caveSize = 5;
 
-    float treeFrequency = 0.1f;
-    int treeDensity = 3;
+    const float treeFrequency = 0.1f;
+    const int treeDensity = 3;
+
+    const int bushDensity = 9;
 
 
-    public void GenerateChunkColumn(WorldPos chunkWorldPos, FastNoise noise, BlockType[] blocks,
+    public virtual void GenerateChunkColumn(WorldPos chunkWorldPos, FastNoise noise, BlockType[] blocks,
                                     int x, int z)
     {
         int stoneHeight = stoneBaseHeight;
         stoneHeight += GetNoise(noise, seaFrequency, maximumLandHeight, x, 0, z);
 
-        if (stoneHeight < seaLevel)
+        if (stoneHeight <= seaLevel)
         {
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
                 if (y <= stoneHeight)
                 {
-                    SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
+                    if(y <= sandHeight)
+                    {
+                        SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
+                    }
+                    else
+                    {
+                        SetBlock(x, y, z, BlockType.Sand, chunkWorldPos, blocks);
+                    }
+                    
                 }
                 else if (y <= seaLevel)
                 {
@@ -83,7 +91,7 @@ public class BiomeBuilder
                             {
                                 CreateTree(x, y + 1, z, blocks, chunkWorldPos);
                             }
-                            else if(greenValue < 9)
+                            else if(greenValue < bushDensity)
                             {
                                 SetBlock(x, y + 1, z, BlockType.Bush, chunkWorldPos, blocks);
                             }
@@ -147,8 +155,4 @@ public class BiomeBuilder
             }
         }
     }
-
-
-
-
 }

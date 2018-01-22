@@ -23,6 +23,7 @@
 		struct Input
 		{
 			float2 uv_MainTexArr;
+			float3 worldPos;
 			float texType;
 		};
 
@@ -64,7 +65,6 @@
 
 		void surf(Input IN, inout SurfaceOutput o)
 		{
-			//IN.texType = 4;
 			float3 realUV = float3(IN.uv_MainTexArr, IN.texType);
 
 			float4 textureVals = UNITY_SAMPLE_TEX2DARRAY(_MainTexArr, realUV);
@@ -74,6 +74,7 @@
 				float3 baseColor = float3(0.521, 0.807, 0.353);
 				textureColor = colorify(baseColor, textureColor);
 			}
+
 			
 			o.Albedo = textureColor;
 			o.Alpha = textureVals.a;

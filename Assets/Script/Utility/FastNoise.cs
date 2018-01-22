@@ -37,7 +37,6 @@ using FN_DECIMAL = System.Single;
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 public class FastNoise
 {
@@ -2207,108 +2206,6 @@ public class FastNoise
             default:
                 return 0;
         }
-    }
-
-    public Vector2 GetDoubleCellularNoise(float x, float y, int seedMultiplier = 5, int seedOffset = 20)
-    {
-        x *= m_frequency;
-        y *= m_frequency;
-
-        return DoubleCellularNoise(x, y, seedMultiplier, seedOffset);
-
-    }
-
-    private Vector2 DoubleCellularNoise(float x, float y, int seedMultiplier, int seedOffset)
-    {
-        int xr = FastRound(x);
-        int yr = FastRound(y);
-
-        FN_DECIMAL distance = 999999;
-        int xc = 0, yc = 0;
-
-        switch (m_cellularDistanceFunction)
-        {
-            default:
-            case CellularDistanceFunction.Euclidean:
-                for (int xi = xr - 1; xi <= xr + 1; xi++)
-                {
-                    for (int yi = yr - 1; yi <= yr + 1; yi++)
-                    {
-                        Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
-
-                        FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                        FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-
-                        FN_DECIMAL newDistance = vecX * vecX + vecY * vecY;
-
-                        if (newDistance < distance)
-                        {
-                            distance = newDistance;
-                            xc = xi;
-                            yc = yi;
-                        }
-                    }
-                }
-                break;
-            case CellularDistanceFunction.Manhattan:
-                for (int xi = xr - 1; xi <= xr + 1; xi++)
-                {
-                    for (int yi = yr - 1; yi <= yr + 1; yi++)
-                    {
-                        Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
-
-                        FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                        FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-
-                        FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY));
-
-                        if (newDistance < distance)
-                        {
-                            distance = newDistance;
-                            xc = xi;
-                            yc = yi;
-                        }
-                    }
-                }
-                break;
-            case CellularDistanceFunction.Natural:
-                for (int xi = xr - 1; xi <= xr + 1; xi++)
-                {
-                    for (int yi = yr - 1; yi <= yr + 1; yi++)
-                    {
-                        Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
-
-                        FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                        FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-
-                        FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
-
-                        if (newDistance < distance)
-                        {
-                            distance = newDistance;
-                            xc = xi;
-                            yc = yi;
-                        }
-                    }
-                }
-                break;
-        }
-
-        Vector2 doubleNoise = new Vector2();
-
-        Float2 vec1 = CELL_2D[Hash2D(m_seed, xc, yc) & 255];
-        doubleNoise.x = m_cellularNoiseLookup.GetNoise(xc + vec1.x * m_cellularJitter, yc + vec1.y * m_cellularJitter);
-
-        int prevSeed = m_cellularNoiseLookup.GetSeed();
-        int secondSeed = prevSeed * seedMultiplier + seedOffset;
-        m_cellularNoiseLookup.SetSeed(secondSeed);
-
-        Float2 vec2 = CELL_2D[Hash2D(secondSeed, xc, yc) & 255];
-        doubleNoise.x = m_cellularNoiseLookup.GetNoise(xc + vec2.x * m_cellularJitter, yc + vec2.y * m_cellularJitter);
-        m_cellularNoiseLookup.SetSeed(prevSeed);
-
-        return doubleNoise;
-
     }
 
     public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z)
