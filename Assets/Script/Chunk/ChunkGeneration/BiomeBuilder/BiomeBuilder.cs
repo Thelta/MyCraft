@@ -6,17 +6,18 @@ public class BiomeBuilder
 {
     const int stoneBaseHeight = -120;
 
-    const int stoneMountainHeight = 10;
-    const float stoneMountainFrequency = 0.00075f;
+    const float stoneMaxMountainHeight = maximumLandHeight + stoneBaseHeight;
+    const float stoneMountainFrequency = 0.004f;
 
-    const int sandHeight = -5;
-    
-    const int dirtBaseHeight = 6;
+    const int belowSeaSandHeight = -5;
+    const int aboveSeaSandHeight = 5;
+
+    const int dirtBaseHeight = 3;
     const float dirtNoise = 0.04f;
-    const int dirtNoiseHeight = 4;
+    const int dirtNoiseHeight = 8;
 
     const int seaLevel = 0;
-    const float seaFrequency = 0.0015f;
+    const float seaFrequency = 0.0007f;
 
     const int maximumLandHeight = 300;
 
@@ -33,7 +34,7 @@ public class BiomeBuilder
                                     int x, int z)
     {
         int stoneHeight = stoneBaseHeight;
-        stoneHeight += GetNoise(noise, seaFrequency, maximumLandHeight, x, 0, z);
+        stoneHeight += GetNoise(noise, seaFrequency, maximumLandHeight, x, stoneBaseHeight, z);
 
         if (stoneHeight <= seaLevel)
         {
@@ -41,7 +42,7 @@ public class BiomeBuilder
             {
                 if (y <= stoneHeight)
                 {
-                    if(y <= sandHeight)
+                    if(y <= belowSeaSandHeight)
                     {
                         SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
                     }
@@ -60,10 +61,13 @@ public class BiomeBuilder
         }
         else
         {
-            int dirtHeight = stoneHeight + dirtBaseHeight;
-            dirtHeight += GetNoise(noise, dirtNoise, dirtNoiseHeight, x, 10, z);
 
-            stoneHeight += GetNoise(noise, stoneMountainFrequency, stoneMountainHeight, x, 0, z);
+            int stoneMountainHeight = Mathf.RoundToInt(ReverseSmooth(stoneHeight / stoneMaxMountainHeight) * stoneMaxMountainHeight);
+
+            stoneHeight = GetNoise(noise, stoneMountainFrequency, stoneMountainHeight, x, 0, z);
+
+            int dirtHeight = stoneHeight;
+            dirtHeight += GetNoise(noise, dirtNoise, 4, x, stoneHeight, z);
 
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
@@ -77,13 +81,21 @@ public class BiomeBuilder
                 {
                     if (y <= stoneHeight)
                     {
-                        SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
+                        if(stoneHeight < aboveSeaSandHeight && stoneHeight > belowSeaSandHeight)
+                        {
+                            SetBlock(x, y, z, BlockType.Sand, chunkWorldPos, blocks);
+                        }
+                        else
+                        {
+                            SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
+                        }
+                        
                     }
-                    else if (y <= dirtHeight)
+                    else if (y <= dirtHeight && stoneHeight > aboveSeaSandHeight)
                     {
                         SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, blocks);
 
-                        int greenValue = GetNoise(noise, treeFrequency, 20, x, 0, z);
+                        int greenValue = GetNoise(noise, treeFrequency, 20, x, y + 1, z);
 
                         if (dirtHeight == y)
                         {
@@ -155,4 +167,10 @@ public class BiomeBuilder
             }
         }
     }
+
+    static float ReverseSmooth(float x)
+    {
+        return x + (x - (x * x * (3.0f - 2.0f * x)));
+    }
+
 }

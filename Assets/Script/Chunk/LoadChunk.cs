@@ -7,6 +7,8 @@ using Priority_Queue;
 public class LoadChunk : MonoBehaviour
 {
 	public World world;
+
+    WorldPos playerPos;
 	
 	SimplePriorityQueue<WorldPos> buildQueue = new SimplePriorityQueue<WorldPos>();
 	
@@ -68,8 +70,11 @@ public class LoadChunk : MonoBehaviour
     // Use this for initialization
     void Start ()
 	{
-		//world.CreateChunk(0, 0, 0);
-	}
+        playerPos = new WorldPos(Mathf.FloorToInt(transform.position.x / Chunk.chunkSize) * Chunk.chunkSize,
+                                        Mathf.FloorToInt(transform.position.y / Chunk.chunkSize) * Chunk.chunkSize,
+                                        Mathf.FloorToInt(transform.position.z / Chunk.chunkSize) * Chunk.chunkSize);
+        //world.CreateChunk(0, 0, 0);
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -84,9 +89,15 @@ public class LoadChunk : MonoBehaviour
 
 	void FindChunksToLoad()
 	{
-		WorldPos playerPos = new WorldPos(Mathf.FloorToInt(transform.position.x / Chunk.chunkSize) * Chunk.chunkSize,
+		WorldPos currentPlayerPos = new WorldPos(Mathf.FloorToInt(transform.position.x / Chunk.chunkSize) * Chunk.chunkSize,
 										Mathf.FloorToInt(transform.position.y / Chunk.chunkSize) * Chunk.chunkSize,
 										Mathf.FloorToInt(transform.position.z / Chunk.chunkSize) * Chunk.chunkSize);
+
+        if(currentPlayerPos != playerPos)
+        {
+            playerPos = currentPlayerPos;
+            UpdatePriority();
+        }
 
 		int prevQueueCount = buildQueue.Count;
 		for(int i = 0; i < PRIORITY_CHUNK_LOOKUP_LIMIT; i++, 
@@ -124,6 +135,14 @@ public class LoadChunk : MonoBehaviour
 		}
 
 	}
+
+    void UpdatePriority()
+    {
+        foreach(WorldPos pos in buildQueue)
+        {
+            buildQueue.UpdatePriority(pos, WorldPos.EuclideanDistance(playerPos, pos));
+        }
+    }
 
 	void LoadAndRenderChunks()
 	{
