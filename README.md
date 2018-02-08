@@ -8,4 +8,4 @@ Textures are stored in texture arrays instead of tile maps, so new textures are 
 While chunk meshing aren't multithreaded, after biome generation is finished, they will be next. 
 For chunk meshing, I currently using Mikola Lysenko's greedy meshing algorithm.
 
-Note: Latest commit is in biome_generation branh.
+Note: Latest commit is in biome_generation branch.
