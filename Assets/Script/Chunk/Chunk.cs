@@ -34,10 +34,12 @@ public class Chunk : MonoBehaviour
 	{
 		filter = GetComponent<MeshFilter>();
 		coll = GetComponent<MeshCollider>();
+        //filter.mesh.MarkDynamic();
+        //coll.sharedMesh.MarkDynamic(); //TODO: Activate these when block put is implemented.
 
 		blocks = new BlockType[chunkSize * chunkSize * chunkSize];
-		isGenerating = false;
-	}
+	    isGenerating = false;
+    }
 
 	// Use this for initialization
 	void Start ()

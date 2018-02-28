@@ -7,7 +7,6 @@ public class BlockLeavesBuilder : BlockBuilder
     public BlockLeavesBuilder() : base()
     {
         type = BlockType.Leaves;
-
     }
     public override TextureType TexturePosition(Direction direction)
     {

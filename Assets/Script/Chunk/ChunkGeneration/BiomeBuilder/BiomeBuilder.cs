@@ -1,5 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
 using UnityEngine;
 
 public class BiomeBuilder
@@ -24,121 +27,168 @@ public class BiomeBuilder
     const float caveFrequency = 0.008f;
     const int caveSize = 5;
 
-    const float treeFrequency = 0.1f;
-    const int treeDensity = 3;
+    const float treeFrequency = 0.2f;
+    const int treeAreaMaxValue = 1600;
+    const int treeAreaMinValue = 24;
+    const float trunkDist = 0.1f;
+    const int trunkMaxHeight = 5;
+    const int leafMaxHeight = 5;
 
+    const float bushFrequency = 0.1f;
     const int bushDensity = 9;
 
+    FastNoise terraNoise;
+    FastNoise treeNoise;
+    FastNoise trunkNoise;
 
-    public virtual void GenerateChunkColumn(WorldPos chunkWorldPos, FastNoise noise, BlockType[] blocks,
+    public BiomeBuilder()
+    {
+        terraNoise = new FastNoise();
+        terraNoise.SetFractalType(FastNoise.FractalType.FBM);
+        terraNoise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+
+        treeNoise = new FastNoise();
+        treeNoise.SetCellularReturnType(FastNoise.CellularReturnType.CellValue);
+        treeNoise.SetCellularJitter(0.2f);
+        treeNoise.SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Natural);
+        treeNoise.SetNoiseType(FastNoise.NoiseType.Cellular);
+
+        trunkNoise = new FastNoise();
+        trunkNoise.SetCellularReturnType(FastNoise.CellularReturnType.Distance2Div);
+        trunkNoise.SetCellularJitter(0.2f);
+        trunkNoise.SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Natural);
+        trunkNoise.SetNoiseType(FastNoise.NoiseType.Cellular);
+
+    }
+
+    public virtual void GenerateChunkColumn(WorldPos chunkWorldPos, BlockType[] blocks,
                                     int x, int z)
     {
         int stoneHeight = stoneBaseHeight;
-        stoneHeight += GetNoise(noise, seaFrequency, maximumLandHeight, x, stoneBaseHeight, z);
+        stoneHeight += GetNoise(terraNoise, seaFrequency, maximumLandHeight, x, stoneBaseHeight, z);
 
         if (stoneHeight <= seaLevel)
         {
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
-                if (y <= stoneHeight)
-                {
-                    if(y <= belowSeaSandHeight)
-                    {
-                        SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
-                    }
-                    else
-                    {
-                        SetBlock(x, y, z, BlockType.Sand, chunkWorldPos, blocks);
-                    }
-                    
-                }
-                else if (y <= seaLevel)
-                {
-                    SetBlock(x, y, z, BlockType.Water, chunkWorldPos, blocks);
-
-                }
+                BlockType seaBlockType = CreateSea(stoneHeight, y);
+                SetBlock(x, y, z, seaBlockType, chunkWorldPos, blocks);
             }
         }
         else
         {
-
             int stoneMountainHeight = Mathf.RoundToInt(ReverseSmooth(stoneHeight / stoneMaxMountainHeight) * stoneMaxMountainHeight);
 
-            stoneHeight = GetNoise(noise, stoneMountainFrequency, stoneMountainHeight, x, 0, z);
+            stoneHeight = GetNoise(terraNoise, stoneMountainFrequency, stoneMountainHeight, x, 0, z);
 
             int dirtHeight = stoneHeight;
-            dirtHeight += GetNoise(noise, dirtNoise, 4, x, stoneHeight, z);
+            dirtHeight += GetNoise(terraNoise, dirtNoise, 4, x, stoneHeight, z);
 
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
-                int caveChance = GetNoise(noise, caveFrequency, 25, x, y, z);
-
-                if(caveSize > caveChance)
-                {
-                    SetBlock(x, y, z, BlockType.Air, chunkWorldPos, blocks);
-                }
-                else
-                {
-                    if (y <= stoneHeight)
-                    {
-                        if(stoneHeight < aboveSeaSandHeight && stoneHeight > belowSeaSandHeight)
-                        {
-                            SetBlock(x, y, z, BlockType.Sand, chunkWorldPos, blocks);
-                        }
-                        else
-                        {
-                            SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
-                        }
-                        
-                    }
-                    else if (y <= dirtHeight && stoneHeight > aboveSeaSandHeight)
-                    {
-                        SetBlock(x, y, z, BlockType.Grass, chunkWorldPos, blocks);
-
-                        int greenValue = GetNoise(noise, treeFrequency, 20, x, y + 1, z);
-
-                        if (dirtHeight == y)
-                        {
-                            if(greenValue < treeDensity)
-                            {
-                                CreateTree(x, y + 1, z, blocks, chunkWorldPos);
-                            }
-                            else if(greenValue < bushDensity)
-                            {
-                                SetBlock(x, y + 1, z, BlockType.Bush, chunkWorldPos, blocks);
-                            }
-                            
-                        }
-                    }
-                    else
-                    {
-                        SetBlock(x, y, z, BlockType.Air, chunkWorldPos, blocks);
-                    }
-
-                }
+                BlockType landBlockType = CreateLand(stoneHeight, dirtHeight, x, y, z);
+                SetBlock(x, y, z, landBlockType, chunkWorldPos, blocks);
             }
 
         }
     }
 
-    void CreateTree(int x, int y, int z, BlockType[] blocks, WorldPos chunkWorldPos)
+    [MethodImplAttribute(256)]
+    BlockType CreateSea(int stoneHeight, int y)
     {
-        //create leaves
-        for (int xi = -2; xi <= 2; xi++)
+        if (y <= stoneHeight)
         {
-            for (int yi = 4; yi <= 8; yi++)
+            if (y <= belowSeaSandHeight)
             {
-                for (int zi = -2; zi <= 2; zi++)
-                {
-                    SetBlock(x + xi, y + yi, z + zi, BlockType.Leaves, chunkWorldPos, blocks, true);
-                }
+                return BlockType.Rock;
+            }
+
+            return BlockType.Sand;
+
+        }
+
+        if (y <= seaLevel)
+        {
+            return BlockType.Water;
+        }
+
+        return BlockType.Air;
+    }
+
+    [MethodImplAttribute(256)]
+    BlockType CreateLand(int stoneHeight, int dirtHeight, int x, int y, int z)
+    {
+        int caveChance = GetNoise(terraNoise, caveFrequency, 25, x, y, z);
+
+        if (caveSize <= caveChance)
+        {
+            if (y <= stoneHeight)
+            {
+                return DecideRockOrSand(stoneHeight);
+            }
+            else if (y <= dirtHeight && stoneHeight > aboveSeaSandHeight)
+            {
+                return BlockType.Grass;
+            }
+            else if (y > dirtHeight && stoneHeight <= dirtHeight && stoneHeight > aboveSeaSandHeight)
+            {
+                return CreateGreenery(dirtHeight, x, y, z);
             }
         }
-        //create trunk
-        for (int yt = 0; yt < 4; yt++)
+
+        return BlockType.Air;
+    }
+
+    [MethodImplAttribute(256)]
+    BlockType DecideRockOrSand(int stoneHeight)
+    {
+        if (stoneHeight < aboveSeaSandHeight && stoneHeight > belowSeaSandHeight)
         {
-            SetBlock(x, y + yt, z, BlockType.Wood, chunkWorldPos, blocks, true);
+            return BlockType.Sand;
         }
+
+        return BlockType.Rock;
+    }
+
+    [MethodImplAttribute(256)]
+    BlockType CreateGreenery(int dirtHeight, int x, int y, int z)
+    {
+        int treeAreaValue = GetNoise(treeNoise, treeFrequency, treeAreaMaxValue, x, z);
+        int dirtCaveChance = GetNoise(terraNoise, caveFrequency, 25, x, dirtHeight, z);
+
+        if (treeAreaValue < treeAreaMinValue && caveSize <= dirtCaveChance)
+        {
+            return CreateTree(dirtHeight, x, y, z);
+        }
+
+        int greenValue = GetNoise(terraNoise, bushFrequency, 20, x, y + 1, z);
+        if (dirtHeight == y - 1 && greenValue < bushDensity)
+        {
+            return BlockType.Bush;
+        }
+
+        return BlockType.Air;
+    }
+
+    [MethodImplAttribute(256)]
+    BlockType CreateTree(int dirtHeight, int x, int y, int z)
+    {
+        if (y <= dirtHeight + trunkMaxHeight)
+        {
+            trunkNoise.SetFrequency(treeFrequency);
+            float treeCenterDist = trunkNoise.GetCellular(x, z);
+            if (treeCenterDist * treeCenterDist < trunkDist)
+            {
+                return BlockType.Wood;
+            }
+        }
+        else if (y > dirtHeight + trunkMaxHeight && y <= dirtHeight + leafMaxHeight + trunkMaxHeight)
+        {
+            return BlockType.Leaves;
+        }
+
+        return BlockType.Air;
+
     }
 
     public static int GetNoise(FastNoise noise, float freq, int max, int x, int y, int z)
@@ -147,6 +197,13 @@ public class BiomeBuilder
         return Mathf.FloorToInt((noise.GetNoise(x, y, z) + 1f) * (max / 2f));
     }
 
+    public static int GetNoise(FastNoise noise, float freq, int max, int x, int y)
+    {
+        noise.SetFrequency(freq);
+        return Mathf.FloorToInt((noise.GetNoise(x, y) + 1f) * (max / 2f));
+    }
+
+
     public static void SetBlock(int x, int y, int z,
                         BlockType block, WorldPos chunkWorldPos, BlockType[] blocks,
                         bool replaceBlocks = false)
@@ -154,8 +211,6 @@ public class BiomeBuilder
         x -= chunkWorldPos.x;
         y -= chunkWorldPos.y;
         z -= chunkWorldPos.z;
-
-
 
         if (Chunk.InRange(x) && Chunk.InRange(y) && Chunk.InRange(z))
         {

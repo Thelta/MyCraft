@@ -18,10 +18,6 @@ public class TerrainGen
 
         biomeNoise = new FastNoise();
 
-        terrainNoise = new FastNoise();
-        terrainNoise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
-        terrainNoise.SetFractalType(FastNoise.FractalType.FBM);
-
         builder = new BiomeBuilder();
         
     }
@@ -36,7 +32,7 @@ public class TerrainGen
 #if chunk_debug
                 DebugGen(chunkWorldPos, x, z);
 #else
-                builder.GenerateChunkColumn(chunkWorldPos, terrainNoise, blocks, x, z);
+                builder.GenerateChunkColumn(chunkWorldPos, blocks, x, z);
 #endif
             }
         }
