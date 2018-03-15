@@ -6,11 +6,12 @@ public class BlockBuilder
 {    
     public BlockType type;
 
+    public virtual bool OVERRIDE_GREEDY_MESHER_RENDERING { get { return false; } }
+
     public BlockBuilder()
     {
         type = BlockType.Rock;
     }
-
 
     public struct Tile { public int x; public int y; }
 
@@ -180,4 +181,11 @@ public class BlockBuilder
         return meshData;
     }
 
+
+    public virtual int RenderingEquality(BlockBuilder other, bool frontFace)
+    {
+        return (this.type == other.type && 
+               (frontFace ? !other.OVERRIDE_GREEDY_MESHER_RENDERING : !this.OVERRIDE_GREEDY_MESHER_RENDERING))
+            ? 1 : (frontFace ? (int)other.type : (int)this.type);
+    }
 }

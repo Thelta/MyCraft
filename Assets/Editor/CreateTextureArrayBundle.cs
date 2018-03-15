@@ -37,6 +37,7 @@ public class CreateTextureArrayBundle : Editor
     static void CreateTextureArray(Texture2D[] textures)
     {
         Texture2DArray textureArray = new Texture2DArray(textures[0].width, textures[1].height, textures.Length, TextureFormat.RGBA32, true);
+
         for (int i = 0; i < textures.Length; i++)
         {
             textureArray.SetPixels(textures[i].GetPixels(0), i, 0);

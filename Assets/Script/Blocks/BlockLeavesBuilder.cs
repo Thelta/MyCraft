@@ -14,6 +14,11 @@ public class BlockLeavesBuilder : BlockBuilder
     }
     public override bool IsSolid(Direction direction)
     {
-        return false;
+        return true;
+    }
+
+    public override bool OVERRIDE_GREEDY_MESHER_RENDERING
+    {
+        get { return true; }
     }
 }

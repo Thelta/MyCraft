@@ -15,6 +15,7 @@ public enum TextureType
 	 log_oak,
 	 log_oak_top,
 	 dirt,
+	 deadbush,
 	 destroy_stage_0,
 	 destroy_stage_1,
 	 destroy_stage_2,

@@ -7,39 +7,44 @@ using UnityEngine;
 
 public class BiomeBuilder
 {
-    const int stoneBaseHeight = -120;
+    protected const int STONE_BASE_HEIGHT = -120;
 
-    const float stoneMaxMountainHeight = maximumLandHeight + stoneBaseHeight;
-    const float stoneMountainFrequency = 0.004f;
+    protected const int MAXIMUM_LAND_HEIGHT = 300;
 
-    const int belowSeaSandHeight = -5;
-    const int aboveSeaSandHeight = 5;
+    protected const int BELOW_SEA_SAND_HEIGHT = -5;
+    protected const int ABOVE_SEA_SAND_HEIGHT = 5;
 
-    const int dirtBaseHeight = 3;
-    const float dirtNoise = 0.04f;
-    const int dirtNoiseHeight = 8;
+    protected virtual float STONE_MAX_MOUNTAIN_HEIGHT { get { return MAXIMUM_LAND_HEIGHT + STONE_BASE_HEIGHT; } } 
+    protected virtual float STONE_MOUNTAIN_FREQUENCY { get { return 0.004f; } } 
 
-    const int seaLevel = 0;
-    const float seaFrequency = 0.0007f;
+    protected virtual int DIRT_BASE_HEIGHT { get { return 3; } } 
+    protected virtual float DIRT_NOISE { get { return 0.04f; } } 
+    protected virtual int DIRT_NOISE_HEIGHT { get { return 8; } } 
 
-    const int maximumLandHeight = 300;
+    protected virtual int SEA_LEVEL { get { return 0; } } 
+    protected virtual float SEA_FREQUENCY { get { return 0.0007f; } } 
 
-    const float caveFrequency = 0.008f;
-    const int caveSize = 5;
+    protected virtual float CAVE_FREQUENCY { get { return 0.008f; } } 
+    protected virtual int CAVE_SIZE { get { return 5; } } 
 
-    const float treeFrequency = 0.2f;
-    const int treeAreaMaxValue = 1600;
-    const int treeAreaMinValue = 24;
-    const float trunkDist = 0.1f;
-    const int trunkMaxHeight = 5;
-    const int leafMaxHeight = 5;
+    protected virtual float TREE_FREQUENCY { get { return 0.2f; } } 
+    protected virtual int TREE_AREA_MAX_VALUE { get { return 1600; } } 
+    protected virtual int TREE_AREA_MIN_VALUE { get { return 24; } } 
+    protected virtual float TRUNK_DIST { get { return 0.1f; } } 
+    protected virtual int TRUNK_MAX_HEIGHT { get { return 5; } } 
+    protected virtual int LEAF_MAX_HEIGHT { get { return 5; } } 
 
-    const float bushFrequency = 0.1f;
-    const int bushDensity = 9;
+    protected virtual float BUSH_FREQUENCY { get { return 0.1f; } } 
+    protected virtual int BUSH_DENSITY { get { return 9; } } 
 
-    FastNoise terraNoise;
-    FastNoise treeNoise;
-    FastNoise trunkNoise;
+    protected virtual BlockType SECOND_LAND_LAYER_BLOCK { get { return BlockType.Grass; } } 
+    protected virtual BlockType BUSH_BLOCK { get { return BlockType.Bush; } }
+    protected virtual BlockType TREE_TRUNK_BLOCK { get { return BlockType.Wood; } }
+    protected virtual BlockType TREE_LEAVES_BLOCK { get { return BlockType.Leaves; } }
+
+    protected FastNoise terraNoise;
+    protected FastNoise treeNoise;
+    protected FastNoise trunkNoise;
 
     public BiomeBuilder()
     {
@@ -64,10 +69,10 @@ public class BiomeBuilder
     public virtual void GenerateChunkColumn(WorldPos chunkWorldPos, BlockType[] blocks,
                                     int x, int z)
     {
-        int stoneHeight = stoneBaseHeight;
-        stoneHeight += GetNoise(terraNoise, seaFrequency, maximumLandHeight, x, stoneBaseHeight, z);
+        int stoneHeight = STONE_BASE_HEIGHT;
+        stoneHeight += GetNoise(terraNoise, SEA_FREQUENCY, MAXIMUM_LAND_HEIGHT, x, STONE_BASE_HEIGHT, z);
 
-        if (stoneHeight <= seaLevel)
+        if (stoneHeight <= SEA_LEVEL)
         {
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
@@ -77,12 +82,12 @@ public class BiomeBuilder
         }
         else
         {
-            int stoneMountainHeight = Mathf.RoundToInt(ReverseSmooth(stoneHeight / stoneMaxMountainHeight) * stoneMaxMountainHeight);
+            int stoneMountainHeight = Mathf.RoundToInt(Mathf2.ReverseSmooth(stoneHeight / STONE_MAX_MOUNTAIN_HEIGHT) * STONE_MAX_MOUNTAIN_HEIGHT);
 
-            stoneHeight = GetNoise(terraNoise, stoneMountainFrequency, stoneMountainHeight, x, 0, z);
+            stoneHeight = GetNoise(terraNoise, STONE_MOUNTAIN_FREQUENCY, stoneMountainHeight, x, 0, z);
 
             int dirtHeight = stoneHeight;
-            dirtHeight += GetNoise(terraNoise, dirtNoise, 4, x, stoneHeight, z);
+            dirtHeight += GetNoise(terraNoise, DIRT_NOISE, 4, x, stoneHeight, z);
 
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
@@ -94,11 +99,11 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    BlockType CreateSea(int stoneHeight, int y)
+    protected virtual BlockType CreateSea(int stoneHeight, int y)
     {
         if (y <= stoneHeight)
         {
-            if (y <= belowSeaSandHeight)
+            if (y <= BELOW_SEA_SAND_HEIGHT)
             {
                 return BlockType.Rock;
             }
@@ -107,7 +112,7 @@ public class BiomeBuilder
 
         }
 
-        if (y <= seaLevel)
+        if (y <= SEA_LEVEL)
         {
             return BlockType.Water;
         }
@@ -116,21 +121,27 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    BlockType CreateLand(int stoneHeight, int dirtHeight, int x, int y, int z)
+    protected virtual BlockType CreateLand(int stoneHeight, int dirtHeight, int x, int y, int z)
     {
-        int caveChance = GetNoise(terraNoise, caveFrequency, 25, x, y, z);
+        int caveChance = GetNoise(terraNoise, CAVE_FREQUENCY, 25, x, y, z);
 
-        if (caveSize <= caveChance)
+        if (CAVE_SIZE <= caveChance)
         {
             if (y <= stoneHeight)
             {
-                return DecideRockOrSand(stoneHeight);
+                if (stoneHeight < ABOVE_SEA_SAND_HEIGHT && stoneHeight > BELOW_SEA_SAND_HEIGHT)
+                {
+                    return BlockType.Sand;
+                }
+
+                return BlockType.Rock;
+
             }
-            else if (y <= dirtHeight && stoneHeight > aboveSeaSandHeight)
+            else if (y <= dirtHeight && stoneHeight > ABOVE_SEA_SAND_HEIGHT)
             {
-                return BlockType.Grass;
+                return SECOND_LAND_LAYER_BLOCK;
             }
-            else if (y > dirtHeight && stoneHeight <= dirtHeight && stoneHeight > aboveSeaSandHeight)
+            else if (y > dirtHeight && stoneHeight <= dirtHeight && stoneHeight > ABOVE_SEA_SAND_HEIGHT)
             {
                 return CreateGreenery(dirtHeight, x, y, z);
             }
@@ -140,29 +151,18 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    BlockType DecideRockOrSand(int stoneHeight)
+    protected virtual BlockType CreateGreenery(int dirtHeight, int x, int y, int z)
     {
-        if (stoneHeight < aboveSeaSandHeight && stoneHeight > belowSeaSandHeight)
-        {
-            return BlockType.Sand;
-        }
+        int treeAreaValue = GetNoise(treeNoise, TREE_FREQUENCY, TREE_AREA_MAX_VALUE, x, z);
+        int dirtCaveChance = GetNoise(terraNoise, CAVE_FREQUENCY, 25, x, dirtHeight, z);
 
-        return BlockType.Rock;
-    }
-
-    [MethodImplAttribute(256)]
-    BlockType CreateGreenery(int dirtHeight, int x, int y, int z)
-    {
-        int treeAreaValue = GetNoise(treeNoise, treeFrequency, treeAreaMaxValue, x, z);
-        int dirtCaveChance = GetNoise(terraNoise, caveFrequency, 25, x, dirtHeight, z);
-
-        if (treeAreaValue < treeAreaMinValue && caveSize <= dirtCaveChance)
+        if (treeAreaValue < TREE_AREA_MIN_VALUE && CAVE_SIZE <= dirtCaveChance)
         {
             return CreateTree(dirtHeight, x, y, z);
         }
 
-        int greenValue = GetNoise(terraNoise, bushFrequency, 20, x, y + 1, z);
-        if (dirtHeight == y - 1 && greenValue < bushDensity)
+        int greenValue = GetNoise(terraNoise, BUSH_FREQUENCY, 20, x, y + 1, z);
+        if (dirtHeight == y - 1 && greenValue < BUSH_DENSITY)
         {
             return BlockType.Bush;
         }
@@ -171,40 +171,40 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    BlockType CreateTree(int dirtHeight, int x, int y, int z)
+    protected virtual BlockType CreateTree(int dirtHeight, int x, int y, int z)
     {
-        if (y <= dirtHeight + trunkMaxHeight)
+        if (y <= dirtHeight + TRUNK_MAX_HEIGHT)
         {
-            trunkNoise.SetFrequency(treeFrequency);
+            trunkNoise.SetFrequency(TREE_FREQUENCY);
             float treeCenterDist = trunkNoise.GetCellular(x, z);
-            if (treeCenterDist * treeCenterDist < trunkDist)
+            if (treeCenterDist * treeCenterDist < TRUNK_DIST)
             {
-                return BlockType.Wood;
+                return TREE_TRUNK_BLOCK;
             }
         }
-        else if (y > dirtHeight + trunkMaxHeight && y <= dirtHeight + leafMaxHeight + trunkMaxHeight)
+        else if (y > dirtHeight + TRUNK_MAX_HEIGHT && y <= dirtHeight + LEAF_MAX_HEIGHT + TRUNK_MAX_HEIGHT)
         {
-            return BlockType.Leaves;
+            return TREE_LEAVES_BLOCK;
         }
 
         return BlockType.Air;
 
     }
 
-    public static int GetNoise(FastNoise noise, float freq, int max, int x, int y, int z)
+    protected static int GetNoise(FastNoise noise, float freq, int max, int x, int y, int z)
     {
         noise.SetFrequency(freq);
         return Mathf.FloorToInt((noise.GetNoise(x, y, z) + 1f) * (max / 2f));
     }
 
-    public static int GetNoise(FastNoise noise, float freq, int max, int x, int y)
+    protected static int GetNoise(FastNoise noise, float freq, int max, int x, int y)
     {
         noise.SetFrequency(freq);
         return Mathf.FloorToInt((noise.GetNoise(x, y) + 1f) * (max / 2f));
     }
 
 
-    public static void SetBlock(int x, int y, int z,
+    protected static void SetBlock(int x, int y, int z,
                         BlockType block, WorldPos chunkWorldPos, BlockType[] blocks,
                         bool replaceBlocks = false)
     {
@@ -223,9 +223,5 @@ public class BiomeBuilder
         }
     }
 
-    static float ReverseSmooth(float x)
-    {
-        return x + (x - (x * x * (3.0f - 2.0f * x)));
-    }
 
 }

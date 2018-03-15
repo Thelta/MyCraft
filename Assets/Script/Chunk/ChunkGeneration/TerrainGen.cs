@@ -18,7 +18,7 @@ public class TerrainGen
 
         biomeNoise = new FastNoise();
 
-        builder = new BiomeBuilder();
+        builder = new BiomeDesertBuilder();
         
     }
 
@@ -58,8 +58,6 @@ public class TerrainGen
             
         }
     }
-
-
 
     public static void SetBlock(int x, int y, int z, 
                                 BlockType block, WorldPos chunkWorldPos, BlockType[] blocks,

@@ -19,6 +19,11 @@ public class BlockBushBuilder : BlockBuilder
         return false;
     }
 
+    public override bool OVERRIDE_GREEDY_MESHER_RENDERING
+    {
+        get { return true; }
+    }
+
     public override MeshData GreedyDirectionData
     (int x, int y, int z, int width, int height, Direction direction, MeshData meshData)
     {

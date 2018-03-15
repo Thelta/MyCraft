@@ -25,8 +25,10 @@ public class Chunk : MonoBehaviour
 	TerrainGen generator;
 	Thread generatorThread;
    
-	static BlockBuilder[] blockBuilders = { null, new BlockAirBuilder(), new BlockBuilder(), new BlockGrassBuilder(),
-        new BlockLeavesBuilder(), new BlockWoodBuilder(), new BlockWaterBuilder(), new BlockBushBuilder(), new BlockSandBuilder() };
+	static readonly BlockBuilder[] blockBuilders = { null, new BlockAirBuilder(), new BlockBuilder(), new BlockGrassBuilder(),
+        new BlockLeavesBuilder(), new BlockWoodBuilder(), new BlockWaterBuilder(), new BlockBushBuilder(), new BlockSandBuilder(),
+        new BlockDeadbushBuilder(), new BlockCactusBuilder()
+	};
 
 
 
@@ -200,9 +202,10 @@ public class Chunk : MonoBehaviour
 																				blockPos[1] + blockOffset[1],
 																				blockPos[2] + blockOffset[2]) : BlockType.Air;
 
-							mask[n++] = (tempBlock1 == tempBlock2 && (frontFace ? tempBlock2 != BlockType.Bush : tempBlock1 != BlockType.Bush))
-                                ? 1 : (frontFace ? (int)tempBlock2 : (int)tempBlock1); //Bushes are exception. We need to render all of them.
-                                                                                        //TODO : I really need to carry some stuff to block builders.
+						    BlockBuilder tempBlockBuilder1 = blockBuilders[(int)tempBlock1];
+						    BlockBuilder tempBlockBuilder2 = blockBuilders[(int)tempBlock2];
+
+						    mask[n++] = tempBlockBuilder1.RenderingEquality(tempBlockBuilder2, frontFace);
 
 						}
 					}
