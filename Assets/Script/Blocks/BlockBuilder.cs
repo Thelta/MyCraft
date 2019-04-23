@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 
 public class BlockBuilder
@@ -7,13 +9,12 @@ public class BlockBuilder
     public BlockType type;
 
     public virtual bool OVERRIDE_GREEDY_MESHER_RENDERING { get { return false; } }
+    public virtual bool OVERRIDE_OFFSET { get { return false; } }
 
     public BlockBuilder()
     {
         type = BlockType.Rock;
     }
-
-    public struct Tile { public int x; public int y; }
 
     public virtual TextureType TexturePosition(Direction direction)
     {
@@ -29,9 +30,7 @@ public class BlockBuilder
         UVs[2] = new Vector2(0,  height);
         UVs[1] = new Vector2(width, height);
 
-
         return UVs;
-
     }
 
     public virtual bool IsSolid(Direction direction)
@@ -56,7 +55,7 @@ public class BlockBuilder
     }
 
     public virtual MeshData GreedyDirectionData
-        (int x, int y, int z, int width, int height, Direction direction, MeshData meshData)
+        (int x, int y, int z, int width, int height, Direction direction, MeshData meshData, BiomeType biome)
     {
         switch (direction)
         {
@@ -82,21 +81,13 @@ public class BlockBuilder
 
         //add texture index to uv2
         int uvTexture = (int)TexturePosition(direction);
-        AddUV2Info(meshData, uvTexture);
+        meshData.AddUV2Info(uvTexture, (int) biome);
 
         //GFDDArray[(int)direction](x, y, z, width, height, meshData);
 
         return meshData;
     }
 
-    public virtual void AddUV2Info(MeshData meshData, int uvTexture)
-    {
-        meshData.texType.Add(new Vector2(uvTexture, 0));
-        meshData.texType.Add(new Vector2(uvTexture, 0));
-        meshData.texType.Add(new Vector2(uvTexture, 0));
-        meshData.texType.Add(new Vector2(uvTexture, 0));
-
-    }
 
     protected virtual MeshData GreedyFaceGroupDataUp
         (int x, int y, int z, int width, int height, MeshData meshData, bool useRenderDataForColl = true)
@@ -181,11 +172,15 @@ public class BlockBuilder
         return meshData;
     }
 
-
-    public virtual int RenderingEquality(BlockBuilder other, bool frontFace)
+    public int RenderingEquality(BlockBuilder other, bool frontFace, BiomeType necessaryBiome, Direction direction)
     {
-        return (this.type == other.type && 
-               (frontFace ? !other.OVERRIDE_GREEDY_MESHER_RENDERING : !this.OVERRIDE_GREEDY_MESHER_RENDERING))
-            ? 1 : (frontFace ? (int)other.type : (int)this.type);
+        BlockBuilder chosenBuilder = frontFace ? other : this;
+
+        ushort type = (ushort) ((this.type == other.type && (!chosenBuilder.OVERRIDE_GREEDY_MESHER_RENDERING))
+            ? 1 : (int) chosenBuilder.type);
+
+        ushort biomeMask = (ushort) ((int)TexturePosition(direction) < TextureValues.ALPHA_TEXTURE_COUNT ? (int) necessaryBiome : 0);
+
+        return (biomeMask << 16) | type;
     }
 }

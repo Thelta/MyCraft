@@ -27,3 +27,8 @@ public enum TextureType
 	 destroy_stage_8,
 	 destroy_stage_9,
 }
+
+ public static class TextureValues
+{
+	 public const int ALPHA_TEXTURE_COUNT = 3;
+}

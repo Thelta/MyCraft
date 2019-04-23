@@ -7,19 +7,31 @@ using SimplexNoise;
 public class TerrainGen
 {
     public BlockType[] blocks;
+    public BiomeType[] biomes;
     FastNoise biomeNoise;
     FastNoise terrainNoise;
-
     BiomeBuilder builder;
+    Dictionary<Vector2Int, BiomeBuilder.ColumnValues> trunkPositions;
 
+    
     public TerrainGen()
     {
         blocks = new BlockType[Chunk.chunkSize * Chunk.chunkSize * Chunk.chunkSize];
+        biomes = new BiomeType[Chunk.chunkSize * Chunk.chunkSize];
+
+        FastNoise biomeLookupNoise = new FastNoise();
+        biomeLookupNoise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
 
         biomeNoise = new FastNoise();
-
-        builder = new BiomeDesertBuilder();
+        biomeNoise.SetNoiseType(FastNoise.NoiseType.Cellular);
+        biomeNoise.SetCellularReturnType(FastNoise.CellularReturnType.NoiseLookup);
+        biomeNoise.SetCellularNoiseLookup(biomeLookupNoise);
+        biomeNoise.SetCellularJitter(0.75f);
         
+        trunkPositions = new Dictionary<Vector2Int, BiomeBuilder.ColumnValues>();
+
+        builder = new BiomeBuilder(trunkPositions);
+
     }
 
     public void ChunkGen(WorldPos chunkWorldPos)
@@ -32,6 +44,10 @@ public class TerrainGen
 #if chunk_debug
                 DebugGen(chunkWorldPos, x, z);
 #else
+                int ix = x - chunkWorldPos.x;
+                int iz = z - chunkWorldPos.z;
+
+                biomes[ix + iz * Chunk.chunkSize] = BiomeType.Jungle;
                 builder.GenerateChunkColumn(chunkWorldPos, blocks, x, z);
 #endif
             }
@@ -52,10 +68,7 @@ public class TerrainGen
                 {
                     SetBlock(x, y, z, BlockType.Rock, chunkWorldPos, blocks);
                 }
-
-                
             }
-            
         }
     }
 
@@ -72,5 +85,12 @@ public class TerrainGen
             blocks[x + (y * Chunk.chunkSize * Chunk.chunkSize) + (z * Chunk.chunkSize)] = block;
         }
     }
+
+    protected static int GetNoise(FastNoise noise, float freq, int max, int x, int y)
+    {
+        noise.SetFrequency(freq);
+        return Mathf.FloorToInt((noise.GetNoise(x, y) + 1f) * (max / 2f));
+    }
+
 
 }

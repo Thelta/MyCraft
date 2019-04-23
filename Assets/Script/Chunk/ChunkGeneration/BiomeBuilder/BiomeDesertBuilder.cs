@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 
 public class BiomeDesertBuilder : BiomeBuilder
 {
+    public BiomeDesertBuilder(Dictionary<Vector2Int, ColumnValues> trunkPositions) : base(trunkPositions) {}
+    protected override BiomeType BIOME_TYPE { get { return BiomeType.Desert; } }
     protected override float DIRT_NOISE { get { return 0.01f; } }
     protected override int BUSH_DENSITY { get { return 9; } }
     int CACTUS_DENSITY { get { return 5; } }

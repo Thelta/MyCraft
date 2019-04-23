@@ -1,14 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class WorldPos
+public struct WorldPos
 {
     public int x, y, z;
-
-    public WorldPos()
-    {
-        this.x = 0; this.y = 0; this.z = 0;
-    }
 
     public WorldPos(int x, int y, int z)
     {
@@ -17,9 +12,9 @@ public class WorldPos
 
     public override bool Equals(object obj)
     {
-        if (GetHashCode() == obj.GetHashCode())
-             return true;
-         return false;
+        if(obj == null) { return false; }
+
+        return GetHashCode() == obj.GetHashCode();
     }
 
     public void Set(int x, int y, int z)

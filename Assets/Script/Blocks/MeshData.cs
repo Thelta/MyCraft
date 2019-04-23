@@ -15,7 +15,7 @@ public class MeshData
 
     public MeshData() { }
 
-    private void AddQuadTriangles()
+    void AddQuadTriangles()
     {
         triangles.Add(vertices.Count - 4);
         triangles.Add(vertices.Count - 3);
@@ -52,6 +52,14 @@ public class MeshData
             AddQuadTriangles();
         }
 
+    }
+
+    public void AddUV2Info(int uvTexture, int biome)
+    {
+        texType.Add(new Vector2(uvTexture, biome));
+        texType.Add(new Vector2(uvTexture, biome));
+        texType.Add(new Vector2(uvTexture, biome));
+        texType.Add(new Vector2(uvTexture, biome));
     }
 
 }

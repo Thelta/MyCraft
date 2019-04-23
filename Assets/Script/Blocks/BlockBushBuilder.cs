@@ -25,7 +25,7 @@ public class BlockBushBuilder : BlockBuilder
     }
 
     public override MeshData GreedyDirectionData
-    (int x, int y, int z, int width, int height, Direction direction, MeshData meshData)
+    (int x, int y, int z, int width, int height, Direction direction, MeshData meshData, BiomeType biome)
     {
         int uvTexture = (int)TexturePosition(direction);
 
@@ -37,22 +37,22 @@ public class BlockBushBuilder : BlockBuilder
                 {
                     case Direction.north:
                         meshData = GreedyFaceGroupDataNorth(x + j, y + i, z, 1, 1, meshData, IsSolid(direction));
-                        AddUV2Info(meshData, uvTexture);
+                        meshData.AddUV2Info(uvTexture, (int)biome);
                         break;
                     case Direction.east:
                         meshData = GreedyFaceGroupDataEast(x, y + j, z + i, 1, 1, meshData, IsSolid(direction));
-                        AddUV2Info(meshData, uvTexture);
+                        meshData.AddUV2Info(uvTexture, (int)biome);
                         break;
                     case Direction.south:
                         meshData = GreedyFaceGroupDataSouth(x + j, y + i, z, 1, 1, meshData, IsSolid(direction));
-                        AddUV2Info(meshData, uvTexture);
+                        meshData.AddUV2Info(uvTexture, (int)biome);
                         break;
                     case Direction.west:
                         meshData = GreedyFaceGroupDataWest(x, y + j, z + i, 1, 1, meshData, IsSolid(direction));
-                        AddUV2Info(meshData, uvTexture);
+                        meshData.AddUV2Info(uvTexture, (int)biome);
                         break;
                 }
-
+                
             }
         }
 

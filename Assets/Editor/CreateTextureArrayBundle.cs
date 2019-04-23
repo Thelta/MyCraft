@@ -5,23 +5,29 @@ using UnityEngine;
 using System.Linq;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 public class CreateTextureArrayBundle : Editor
 {
-    static string enumPath = "Assets/Script/Blocks/TextureType.cs";
-    static string texturePath = "Tiles";
-    static string textureArrayPath = "Assets/2DArray.asset";
+    const string ENUM_PATH = "Assets/Script/Blocks/TextureType.cs";
+    const string TEXTURE_PATH = "Tiles";
+    const string TEXTURE_ARRAY_PATH = "Assets/2DArray.asset";
+
+    const int ALPHA_TEXTURE_MAX = 100;
 
     [MenuItem("GameObject/Process Tile Textures")]
     static void ProcessTileTextures()
     {
-        Texture2D[] textures = Resources.LoadAll<Texture2D>(texturePath);
+        Texture2D[] textures = Resources.LoadAll<Texture2D>(TEXTURE_PATH);
+
         /*
             It seems Unity reads file in normal string sort like 1, 100, 1000, 2 etc
             So we need to do a natural sort using beginning number like 1, 2, 100, 1000
         */
+        textures = textures.OrderBy(t => Convert.ToInt32(t.name.Substring(0, t.name.IndexOf('_')))).ToArray();
 
-        textures = textures.OrderBy(t => Convert.ToInt32((t.name.Substring(0, t.name.IndexOf('_'))))).ToArray();
+        //Count textures that contain alpha
+        int alphaTextureCount = textures.Count(t => Convert.ToInt32(t.name.Substring(0, t.name.IndexOf('_'))) < ALPHA_TEXTURE_MAX);
 
         //Create Texture2DArray prefab
         CreateTextureArray(textures);
@@ -29,9 +35,11 @@ public class CreateTextureArrayBundle : Editor
         //Create tile name enum
         string[] textureNames = GetTextureName(textures);
         string[] enumLines = GetEnumLines(textureNames);
-        CreateEnum(enumLines);
+        CreateEnum(enumLines, alphaTextureCount);
 
         AssetDatabase.Refresh();
+
+        Debug.Log("Texture Array Created Succesfully.");
     }
 
     static void CreateTextureArray(Texture2D[] textures)
@@ -44,7 +52,7 @@ public class CreateTextureArrayBundle : Editor
         }
         textureArray.Apply();
 
-        AssetDatabase.CreateAsset(textureArray, textureArrayPath);
+        AssetDatabase.CreateAsset(textureArray, TEXTURE_ARRAY_PATH);
     }
 
     static string[] GetTextureName(Texture2D[] textures)
@@ -72,9 +80,9 @@ public class CreateTextureArrayBundle : Editor
         return enumLines;
     }
 
-    static void CreateEnum(string[] enumLines)
+    static void CreateEnum(string[] enumLines, int alphaTextureCount)
     {
-        using (StreamWriter streamWriter = new StreamWriter(enumPath))
+        using (StreamWriter streamWriter = new StreamWriter(ENUM_PATH))
         {
             streamWriter.WriteLine("public enum TextureType");
             streamWriter.WriteLine("{");
@@ -84,6 +92,12 @@ public class CreateTextureArrayBundle : Editor
                 streamWriter.WriteLine(enumLine);
             }
 
+            streamWriter.WriteLine("}");
+
+
+            streamWriter.WriteLine("\n public static class TextureValues");
+            streamWriter.WriteLine("{");
+            streamWriter.WriteLine("\t public const int ALPHA_TEXTURE_COUNT = {0};", alphaTextureCount);
             streamWriter.WriteLine("}");
         }
     }

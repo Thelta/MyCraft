@@ -4,7 +4,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 
-public class World : MonoBehaviour {
+public class World : MonoBehaviour, IBlockHelper
+{
 
     [HideInInspector]
 	public Dictionary<WorldPos, Chunk> chunks;
@@ -13,11 +14,10 @@ public class World : MonoBehaviour {
     void Awake()
 	{
         chunks = new Dictionary<WorldPos, Chunk>();
-
 #if debug_chunk
         Debug.LogWarning("YOU ARE IN CHUNK DEBUG MODE");
 #endif
-    }
+	}
 
 
 
@@ -33,6 +33,7 @@ public class World : MonoBehaviour {
 	
 	void Update ()
 	{
+
 	}
 
 	public void CreateChunk(int x, int y, int z)

@@ -19,22 +19,27 @@ public class BlockWaterBuilder : BlockBuilder
         return false;
     }
 
+    public override bool OVERRIDE_OFFSET
+    {
+        get { return true; }
+    }
+
     public override MeshData GreedyDirectionData
-    (int x, int y, int z, int width, int height, Direction direction, MeshData meshData)
+    (int x, int y, int z, int width, int height, Direction direction, MeshData meshData, BiomeType biome)
     {
         if(direction == Direction.up)
         {
             meshData = GreedyFaceGroupDataUp(x, y, z, width, height, meshData, IsSolid(direction));
 
             int uvTexture = (int)TexturePosition(direction);
-            AddUV2Info(meshData, uvTexture);
+            meshData.AddUV2Info(uvTexture, (int) biome);
         }
         else if(direction == Direction.down)
         {
             meshData = GreedyFaceGroupDataDown(x, y, z, width, height, meshData, IsSolid(direction));
 
             int uvTexture = (int)TexturePosition(direction);
-            AddUV2Info(meshData, uvTexture);
+            meshData.AddUV2Info(uvTexture, (int)biome);
         }
         
         return meshData;
