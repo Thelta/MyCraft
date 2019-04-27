@@ -10,7 +10,7 @@ public class TerrainGen
     public BiomeType[] biomes;
     FastNoise biomeNoise;
     FastNoise terrainNoise;
-    BiomeBuilder builder;
+    BiomeBuilder[] builders;
     Dictionary<Vector2Int, BiomeBuilder.ColumnValues> trunkPositions;
 
     
@@ -30,7 +30,7 @@ public class TerrainGen
         
         trunkPositions = new Dictionary<Vector2Int, BiomeBuilder.ColumnValues>();
 
-        builder = new BiomeBuilder(trunkPositions);
+        builders = new BiomeBuilder[] { new BiomeBuilder(trunkPositions), new BiomeForestBuilder(trunkPositions), new BiomeDesertBuilder(trunkPositions) };
 
     }
 
@@ -47,8 +47,9 @@ public class TerrainGen
                 int ix = x - chunkWorldPos.x;
                 int iz = z - chunkWorldPos.z;
 
-                biomes[ix + iz * Chunk.chunkSize] = BiomeType.Jungle;
-                builder.GenerateChunkColumn(chunkWorldPos, blocks, x, z);
+                BiomeType type = (BiomeType)GetNoise(biomeNoise, 0.05f, 3, x, z);
+                biomes[ix + iz * Chunk.chunkSize] = type;
+                builders[(int)type].GenerateChunkColumn(chunkWorldPos, blocks, x, z);
 #endif
             }
         }
@@ -91,6 +92,4 @@ public class TerrainGen
         noise.SetFrequency(freq);
         return Mathf.FloorToInt((noise.GetNoise(x, y) + 1f) * (max / 2f));
     }
-
-
 }
