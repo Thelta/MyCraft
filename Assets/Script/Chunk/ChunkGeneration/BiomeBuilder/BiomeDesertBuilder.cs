@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 public class BiomeDesertBuilder : BiomeBuilder
 {
-    public BiomeDesertBuilder(Dictionary<Vector2Int, ColumnValues> trunkPositions) : base(trunkPositions) {}
+    public BiomeDesertBuilder() : base() {}
     protected override BiomeType BIOME_TYPE { get { return BiomeType.Desert; } }
     protected override float DIRT_NOISE { get { return 0.01f; } }
     protected override int BUSH_DENSITY { get { return 9; } }
@@ -15,10 +15,16 @@ public class BiomeDesertBuilder : BiomeBuilder
     protected override BlockType BUSH_BLOCK { get { return BlockType.Deadbush; }}
     protected override BlockType TREE_TRUNK_BLOCK { get { return BlockType.Cactus; } }
 
-    [MethodImplAttribute(256)]
-    protected override BlockType CreateGreenery(int dirtHeight, int x, int y, int z)
+    static BiomeDesertBuilder()
     {
-        int greenValue = GetNoise(terraNoise, BUSH_FREQUENCY, 40, x, dirtHeight + 1, z);
+        builders[(int)BiomeType.Desert - 1] = new BiomeDesertBuilder();
+    }
+
+    [MethodImplAttribute(256)]
+    protected override BlockType CreateGreenery(int dirtHeight, int x, int y, int z, BiomeNoises noises)
+    {
+        
+        int greenValue = GetNoise(noises.terraNoise, BUSH_FREQUENCY, 40, x, dirtHeight + 1, z);
         if (y <= dirtHeight + greenValue  && greenValue < CACTUS_DENSITY)
         {
             return TREE_TRUNK_BLOCK;
@@ -31,4 +37,10 @@ public class BiomeDesertBuilder : BiomeBuilder
 
         return BlockType.Air;
     }
+
+    protected override BlockType CreateTree(int stoneHeight, int dirtHeight, bool isDirtCave, int x, int y, int z, BiomeNoises noises)
+    {
+        return BlockType.Air;
+    }
+
 }

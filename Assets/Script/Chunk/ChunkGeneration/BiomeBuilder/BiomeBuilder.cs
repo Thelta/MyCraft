@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -19,6 +20,9 @@ public class BiomeBuilder
             this.isCenterTrunkPossible = isCenterTrunkPossible;
         }
     }
+
+    protected static BiomeBuilder[] builders;
+
 
     protected virtual BiomeType BIOME_TYPE { get { return BiomeType.Steppe; } }
 
@@ -64,72 +68,51 @@ public class BiomeBuilder
 
     protected readonly BlockType[] belowTrunkBlockTypes;
 
-    protected FastNoise terraNoise;
-    protected FastNoise treeNoise;
-    protected FastNoise trunkNoise;
-
-    protected BlockType[] blocks;
-    protected Dictionary<Vector2Int, ColumnValues> trunkPositions;
-
-    public BiomeBuilder(Dictionary<Vector2Int, ColumnValues> trunkPositions)
+    static BiomeBuilder()
     {
-        terraNoise = new FastNoise();
-        terraNoise.SetFractalType(FastNoise.FractalType.FBM);
-        terraNoise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
-
-        treeNoise = new FastNoise();
-        treeNoise.SetCellularReturnType(FastNoise.CellularReturnType.CellValue);
-        treeNoise.SetCellularJitter(0.2f);
-        treeNoise.SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Natural);
-        treeNoise.SetNoiseType(FastNoise.NoiseType.Cellular);
-
-        trunkNoise = new FastNoise();
-        trunkNoise.SetCellularReturnType(FastNoise.CellularReturnType.Distance2Div);
-        trunkNoise.SetCellularJitter(0.2f);
-        trunkNoise.SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Natural);
-        trunkNoise.SetNoiseType(FastNoise.NoiseType.Cellular);
-
-        belowTrunkBlockTypes = new BlockType[] { BlockType.Rock, SECOND_LAND_LAYER_BLOCK, BlockType.Sand };
-
-        this.trunkPositions = trunkPositions;
+        builders = new BiomeBuilder[System.Enum.GetValues(typeof(BiomeType)).Length];
+        builders[(int)BiomeType.Steppe - 1] = new BiomeBuilder();
     }
+
 
     public virtual void GenerateChunkColumn(WorldPos chunkWorldPos, BlockType[] blocks,
                                     int x, int z)
     {
-        this.blocks = blocks;
-
+        BiomeNoises noises = NoiseFactory.GetBiomeNoises();
         int stoneHeight = STONE_BASE_HEIGHT;
-        stoneHeight += GetNoise(terraNoise, SEA_FREQUENCY, MAXIMUM_LAND_HEIGHT, x, STONE_BASE_HEIGHT, z);
+        stoneHeight += GetNoise(noises.terraNoise, SEA_FREQUENCY, MAXIMUM_LAND_HEIGHT, x, STONE_BASE_HEIGHT, z);
 
         if (stoneHeight <= SEA_LEVEL)
         {
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
-                BlockType seaBlockType = CreateSea(stoneHeight, y);
+                BlockType seaBlockType = CreateSea(stoneHeight, y, noises);
                 SetBlock(x, y, z, seaBlockType, chunkWorldPos, blocks);
             }
         }
         else
         {
-            int stoneMountainHeight = Mathf.RoundToInt(MultiplierFunc(stoneHeight / STONE_MAX_MOUNTAIN_HEIGHT) * STONE_MAX_MOUNTAIN_HEIGHT);
+            //int stoneMountainHeight = Mathf.RoundToInt(MultiplierFunc(stoneHeight / STONE_MAX_MOUNTAIN_HEIGHT) * STONE_MAX_MOUNTAIN_HEIGHT);
+            int stoneMountainHeight = stoneHeight;
 
-            stoneHeight = GetNoise(terraNoise, STONE_MOUNTAIN_FREQUENCY, stoneMountainHeight, x, z);
+            stoneHeight = GetNoise(noises.terraNoise, STONE_MOUNTAIN_FREQUENCY, stoneMountainHeight, x, z);
 
             int dirtHeight = stoneHeight;
-            dirtHeight += GetNoise(terraNoise, DIRT_NOISE, 4, x, z);
+            dirtHeight += GetNoise(noises.terraNoise, DIRT_NOISE, 4, x, z);
 
             for (int y = chunkWorldPos.y; y < chunkWorldPos.y + Chunk.chunkSize; y++)
             {
-                BlockType landBlockType = CreateLand(stoneHeight, dirtHeight, x, y, z);
+                BlockType landBlockType = CreateLand(stoneHeight, dirtHeight, x, y, z, noises);
                 SetBlock(x, y, z, landBlockType, chunkWorldPos, blocks);
             }
 
         }
+
+        NoiseFactory.PutBiomeNoisesInstance(noises);
     }
 
     [MethodImplAttribute(256)]
-    protected virtual BlockType CreateSea(int stoneHeight, int y)
+    protected virtual BlockType CreateSea(int stoneHeight, int y, BiomeNoises noises)
     {
         if (y <= stoneHeight)
         {
@@ -151,12 +134,12 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    protected virtual BlockType CreateLand(int stoneHeight, int dirtHeight, int x, int y, int z)
+    protected virtual BlockType CreateLand(int stoneHeight, int dirtHeight, int x, int y, int z, BiomeNoises noises)
     {
         // Normally we only need to calculate caveChance when y is lower than dirtHeight. 
         // However if dirt has been selected as cave, then there is a chance above of that dirt, there can be either 
         // trunk or grass, so we need to check that if there is dirt in dirtHeight.
-        int caveChance = GetNoise(terraNoise, CAVE_FREQUENCY, CAVE_MAX_SIZE, x, y > dirtHeight ? dirtHeight : y, z);
+        int caveChance = GetNoise(noises.terraNoise, CAVE_FREQUENCY, CAVE_MAX_SIZE, x, y > dirtHeight ? dirtHeight : y, z);
 
         bool isCave = CAVE_SIZE > caveChance;
 
@@ -180,12 +163,12 @@ public class BiomeBuilder
 
         if (y > dirtHeight)
         {
-            treeNoise.cellularCenterOffset = new Vector2();
-            int treeAreaValue = GetNoise(treeNoise, TREE_FREQUENCY, TREE_AREA_MAX_VALUE, x, z);
+            noises.treeNoise.cellularCenterOffset = new Vector2();
+            int treeAreaValue = GetNoise(noises.treeNoise, TREE_FREQUENCY, TREE_AREA_MAX_VALUE, x, z);
 
             if (treeAreaValue < TREE_AREA_MIN_VALUE)
             {
-                BlockType block = CreateTree(stoneHeight, dirtHeight, isCave, x, y, z);
+                BlockType block = CreateTree(stoneHeight, dirtHeight, isCave, x, y, z, noises);
                 if (block != BlockType.Air)
                 {
                     return block;
@@ -197,7 +180,7 @@ public class BiomeBuilder
         {
             if (y > dirtHeight && stoneHeight < dirtHeight && stoneHeight > ABOVE_SEA_SAND_HEIGHT)
             {
-                return CreateGreenery(dirtHeight, x, y, z);
+                return CreateGreenery(dirtHeight, x, y, z, noises);
             }
 
         }
@@ -206,9 +189,9 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    protected virtual BlockType CreateGreenery(int dirtHeight, int x, int y, int z)
+    protected virtual BlockType CreateGreenery(int dirtHeight, int x, int y, int z, BiomeNoises noises)
     {
-        int greenValue = GetNoise(terraNoise, BUSH_FREQUENCY, BUSH_MAX_DENSITY, x, y + 1, z);
+        int greenValue = GetNoise(noises.terraNoise, BUSH_FREQUENCY, BUSH_MAX_DENSITY, x, y + 1, z);
         if (dirtHeight == y - 1 && greenValue < BUSH_DENSITY)
         {
             return BlockType.Bush;
@@ -218,9 +201,9 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    protected virtual BlockType CreateTree(int stoneHeight, int dirtHeight, bool isDirtCave, int x, int y, int z)
+    protected virtual BlockType CreateTree(int stoneHeight, int dirtHeight, bool isDirtCave, int x, int y, int z, BiomeNoises noises)
     {
-        Vector2 treeCenterOffset = treeNoise.cellularCenterOffset / TREE_FREQUENCY;
+        Vector2 treeCenterOffset = noises.treeNoise.cellularCenterOffset / TREE_FREQUENCY;
         Vector2Int treeCenter = new Vector2Int(
             Mathf.FloorToInt(x + treeCenterOffset.x), 
             Mathf.FloorToInt(z + treeCenterOffset.y));
@@ -232,20 +215,20 @@ public class BiomeBuilder
 
             if (trunkCondition)
             {
-                if (trunkPositions.ContainsKey(treeCenter))
+                if (!TerrainGen.trunkPositions.ContainsKey(treeCenter))
                 {
                     ColumnValues values = new ColumnValues(BIOME_TYPE, stoneHeight, dirtHeight, true);
-                    trunkPositions.Add(treeCenter, values);
+                    TerrainGen.trunkPositions.TryAdd(treeCenter, values);
                 }
 
                 return TREE_TRUNK_BLOCK;
             }
             else
             {
-                if (trunkPositions.ContainsKey(treeCenter))
+                if (!TerrainGen.trunkPositions.ContainsKey(treeCenter))
                 {
                     ColumnValues values = new ColumnValues(BIOME_TYPE, stoneHeight, dirtHeight, false);
-                    trunkPositions.Add(treeCenter, values);
+                    TerrainGen.trunkPositions.TryAdd(treeCenter, values);
                 }
 
                 return BlockType.Air;
@@ -254,7 +237,7 @@ public class BiomeBuilder
         }
 
         int centerTrunkStoneHeight, centerTrunkDirtHeight;
-        bool canTreeExist = FindCenterTrunkBlock(treeCenter, out centerTrunkStoneHeight, out centerTrunkDirtHeight);
+        bool canTreeExist = FindCenterTrunkBlock(treeCenter, out centerTrunkStoneHeight, out centerTrunkDirtHeight, noises);
 
         if (canTreeExist)
         {
@@ -281,26 +264,37 @@ public class BiomeBuilder
     }
 
     [MethodImplAttribute(256)]
-    protected bool FindCenterTrunkBlock(Vector2Int centerTrunkPos, out int centerTrunkStoneHeight, out int centerTrunkDirtHeight)
+    protected bool FindCenterTrunkBlock(Vector2Int centerTrunkPos, out int centerTrunkStoneHeight, out int centerTrunkDirtHeight, BiomeNoises noises)
     {
-        bool isTrunkAdded = trunkPositions.TryGetValue(centerTrunkPos, out ColumnValues columnValues);
+        bool isTrunkAdded = TerrainGen.trunkPositions.TryGetValue(centerTrunkPos, out ColumnValues columnValues);
         bool isTrunkPossible = columnValues.isCenterTrunkPossible;
 
         if (!isTrunkAdded)
         {
             centerTrunkStoneHeight = STONE_BASE_HEIGHT;
-            centerTrunkStoneHeight += GetNoise(terraNoise, SEA_FREQUENCY, MAXIMUM_LAND_HEIGHT, centerTrunkPos.x, STONE_BASE_HEIGHT, centerTrunkPos.y);
+            centerTrunkStoneHeight += GetNoise(noises.terraNoise, SEA_FREQUENCY, MAXIMUM_LAND_HEIGHT, centerTrunkPos.x, STONE_BASE_HEIGHT, centerTrunkPos.y);
 
             int stoneMountainHeight = Mathf.RoundToInt(MultiplierFunc(centerTrunkStoneHeight / STONE_MAX_MOUNTAIN_HEIGHT) * STONE_MAX_MOUNTAIN_HEIGHT);
 
-            centerTrunkStoneHeight = GetNoise(terraNoise, STONE_MOUNTAIN_FREQUENCY, stoneMountainHeight, centerTrunkPos.x, centerTrunkPos.y);
+            centerTrunkStoneHeight = GetNoise(noises.terraNoise, STONE_MOUNTAIN_FREQUENCY, stoneMountainHeight, centerTrunkPos.x, centerTrunkPos.y);
 
             centerTrunkDirtHeight = centerTrunkStoneHeight;
-            centerTrunkDirtHeight += GetNoise(terraNoise, DIRT_NOISE, 4, centerTrunkPos.x, centerTrunkPos.y);
+            centerTrunkDirtHeight += GetNoise(noises.terraNoise, DIRT_NOISE, 4, centerTrunkPos.x, centerTrunkPos.y);
 
-            BlockType block = CreateLand(centerTrunkStoneHeight, centerTrunkDirtHeight, centerTrunkPos.x, centerTrunkDirtHeight + 1, centerTrunkPos.y);
+            int type = GetNoise(noises.biomeSelectNoise, 0.05f, 3, centerTrunkPos.x, centerTrunkPos.y);
+            BlockType block = builders[type].CreateLand(centerTrunkStoneHeight, centerTrunkDirtHeight, centerTrunkPos.x, centerTrunkDirtHeight + 1, centerTrunkPos.y, noises);
+            //BlockType block = CreateLand(centerTrunkStoneHeight, centerTrunkDirtHeight, centerTrunkPos.x, centerTrunkDirtHeight + 1, centerTrunkPos.y, noises);
 
             isTrunkPossible = block == TREE_TRUNK_BLOCK;
+
+            columnValues.dirtHeight = centerTrunkDirtHeight;
+            columnValues.stoneHeight = centerTrunkStoneHeight;
+            columnValues.isCenterTrunkPossible = isTrunkPossible;
+            columnValues.biomeType = (BiomeType)type;
+
+            TerrainGen.trunkPositions.TryAdd(centerTrunkPos, columnValues);
+
+            Debug.Log($"{BIOME_TYPE}, {builders[type].BIOME_TYPE}");
         }
         else
         {
@@ -350,6 +344,4 @@ public class BiomeBuilder
     {
         return blocks[x + (y * Chunk.chunkSize * Chunk.chunkSize) + (z * Chunk.chunkSize)];
     }
-
-
 }

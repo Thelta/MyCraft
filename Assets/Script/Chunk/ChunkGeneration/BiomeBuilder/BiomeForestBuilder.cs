@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class BiomeForestBuilder : BiomeBuilder
 {
-    public BiomeForestBuilder(Dictionary<Vector2Int, ColumnValues> trunkPositions) : base(trunkPositions) {}
     protected override BiomeType BIOME_TYPE { get { return BiomeType.Jungle; } }
     protected override float STONE_MOUNTAIN_FREQUENCY { get { return 0.001f; } }
 
@@ -23,4 +22,11 @@ public class BiomeForestBuilder : BiomeBuilder
     protected override int CAVE_SIZE { get { return 1; } }
 
     protected override int ABOVE_SEA_SAND_HEIGHT{ get { return 0; } }
+
+
+    static BiomeForestBuilder()
+    {
+        builders[(int)BiomeType.Jungle - 1] = new BiomeForestBuilder();
+    }
+
 }
